@@ -19,7 +19,8 @@ import {
   Upload, 
   BarChart, 
   Globe,
-  MoreVertical
+  MoreVertical,
+  X
 } from "lucide-react";
 import { Message } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
@@ -33,6 +34,8 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
   const { user } = useAuth();
   const [message, setMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedDocument, setUploadedDocument] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -79,7 +82,18 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
 
   const handleSendMessage = () => {
     if (message.trim()) {
-      sendMessageMutation.mutate(message);
+      let finalMessage = message;
+      
+      // If there's an uploaded document, include it in the message context
+      if (uploadedDocument) {
+        finalMessage = `${message}\n\n[Document: ${uploadedDocument.originalName} - ID: ${uploadedDocument.id}]`;
+      }
+      
+      sendMessageMutation.mutate(finalMessage);
+      
+      // Clear uploaded file state after sending
+      setUploadedFile(null);
+      setUploadedDocument(null);
     }
   };
 
@@ -99,29 +113,13 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
       const response = await apiRequest("POST", "/api/documents", formData);
       const document = await response.json();
       
-      // Automatically send a message about the uploaded file
-      const uploadMessage = `I've uploaded a file: ${document.originalName}. Please analyze this document and tell me what it contains.`;
-      if (currentChatId) {
-        sendMessageMutation.mutate(uploadMessage);
-      } else {
-        // Create new chat and send message
-        const chatResponse = await apiRequest("POST", "/api/chats", {
-          title: `Document Analysis: ${document.originalName}`,
-        });
-        const chat = await chatResponse.json();
-        onChatCreated(chat.id);
-        
-        // Send message to new chat
-        await apiRequest("POST", `/api/chats/${chat.id}/messages`, {
-          role: "user",
-          content: uploadMessage,
-        });
-        
-        queryClient.invalidateQueries({ queryKey: ["/api/chats"] });
-        queryClient.invalidateQueries({ 
-          queryKey: ["/api/chats", chat.id, "messages"] 
-        });
-      }
+      // Store the uploaded file and document for later use
+      setUploadedFile(file);
+      setUploadedDocument(document);
+      
+      // Add file info to the message input
+      setMessage(`[📄 ${document.originalName} uploaded] `);
+      
     } catch (error) {
       console.error("File upload failed:", error);
     } finally {
@@ -197,8 +195,8 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     <div className="flex items-start space-x-4">
                       <Upload className="text-bpn-turquoise text-2xl mt-1" />
                       <div>
-                        <h3 className="font-semibold text-bpn-black mb-2">Document Analysis</h3>
-                        <p className="text-sm text-bpn-black/70">
+                        <h3 className="font-semibold text-foreground mb-2">Document Analysis</h3>
+                        <p className="text-sm text-foreground/70">
                           Upload PDFs, DOCX files and extract key information instantly.
                         </p>
                       </div>
@@ -212,8 +210,8 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     <div className="flex items-start space-x-4">
                       <BarChart className="text-bpn-green text-2xl mt-1" />
                       <div>
-                        <h3 className="font-semibold text-bpn-black mb-2">Report Generation</h3>
-                        <p className="text-sm text-bpn-black/70">
+                        <h3 className="font-semibold text-foreground mb-2">Report Generation</h3>
+                        <p className="text-sm text-foreground/70">
                           Create comprehensive reports using data from multiple sources.
                         </p>
                       </div>
@@ -227,8 +225,8 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     <div className="flex items-start space-x-4">
                       <FileText className="text-bpn-turquoise text-2xl mt-1" />
                       <div>
-                        <h3 className="font-semibold text-bpn-black mb-2">Intelligent Search</h3>
-                        <p className="text-sm text-bpn-black/70">
+                        <h3 className="font-semibold text-foreground mb-2">Intelligent Search</h3>
+                        <p className="text-sm text-foreground/70">
                           Query information with context and reasoning capabilities.
                         </p>
                       </div>
@@ -242,8 +240,8 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     <div className="flex items-start space-x-4">
                       <Globe className="text-bpn-green text-2xl mt-1" />
                       <div>
-                        <h3 className="font-semibold text-bpn-black mb-2">BPN Knowledge Base</h3>
-                        <p className="text-sm text-bpn-black/70">
+                        <h3 className="font-semibold text-foreground mb-2">BPN Knowledge Base</h3>
+                        <p className="text-sm text-foreground/70">
                           Access information scraped from www.bpn.rw automatically.
                         </p>
                       </div>
@@ -264,7 +262,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                           <div className="w-2 h-2 bg-bpn-turquoise rounded-full animate-bounce"></div>
                           <div className="w-2 h-2 bg-bpn-green rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
                           <div className="w-2 h-2 bg-bpn-turquoise rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                          <span className="text-sm text-bpn-black/70 ml-2">AI is thinking...</span>
+                          <span className="text-sm text-foreground/70 ml-2">AI is thinking...</span>
                         </div>
                       </LiquidGlass>
                     </div>
@@ -288,16 +286,43 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
               {/* Message Input */}
               <div className="flex-1">
                 <div className="relative">
+                  {/* File Upload Indicator */}
+                  {uploadedDocument && (
+                    <div className="mb-2 p-2 bg-bpn-turquoise/10 border border-bpn-turquoise/20 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <FileText className="w-4 h-4 text-bpn-turquoise" />
+                        <span className="text-sm text-foreground font-medium">
+                          {uploadedDocument.originalName}
+                        </span>
+                        <Badge variant="secondary" className="text-xs">
+                          Ready to analyze
+                        </Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setUploadedFile(null);
+                            setUploadedDocument(null);
+                            setMessage("");
+                          }}
+                          className="p-1 h-auto ml-auto"
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  
                   <Textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyDown={handleKeyPress}
-                    placeholder="Ask me anything about your documents or BPN..."
+                    placeholder={uploadedDocument ? "Ask me about this document..." : "Ask me anything about your documents or BPN..."}
                     className="liquid-input resize-none min-h-[60px] max-h-32 pr-16"
                     disabled={sendMessageMutation.isPending}
                   />
                   {/* Character Counter */}
-                  <div className="absolute bottom-2 right-2 text-xs text-bpn-black/50">
+                  <div className="absolute bottom-2 right-2 text-xs text-foreground/50">
                     {message.length}/2000
                   </div>
                 </div>
@@ -319,7 +344,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
           
           {/* Footer */}
           <div className="mt-4 text-center">
-            <p className="text-xs text-bpn-black/50">
+            <p className="text-xs text-foreground/50">
               BPN AI can make mistakes, so double-check important information. 
               <a href="#" className="text-bpn-turquoise hover:underline ml-1">Privacy Policy</a> | 
               <a href="#" className="text-bpn-turquoise hover:underline ml-1">Terms of Service</a>

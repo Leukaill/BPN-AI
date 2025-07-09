@@ -10,8 +10,10 @@ let mammoth: any;
 
 async function loadDependencies() {
   try {
-    pdfParse = await import("pdf-parse");
-    mammoth = await import("mammoth");
+    // Use require instead of import to avoid module loading issues
+    pdfParse = require("pdf-parse");
+    mammoth = require("mammoth");
+    console.log("Document processing dependencies loaded successfully");
   } catch (error) {
     console.error("Failed to load document processing dependencies:", error);
   }
@@ -81,7 +83,7 @@ class DocumentProcessor {
         throw new Error("PDF parsing library not available");
       }
       
-      const data = await pdfParse.default(buffer);
+      const data = await pdfParse(buffer);
       return data.text;
     } catch (error) {
       console.error("PDF extraction error:", error);

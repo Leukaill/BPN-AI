@@ -23,26 +23,48 @@ class AIService {
       // Prepare context
       let context = "You are BPN AI Assistant, a helpful AI assistant for BPN organization. You are professional, knowledgeable, and provide accurate information.\n\n";
       
+      // Check if the prompt references a specific document
+      const documentIdMatch = prompt.match(/\[Document:.*?- ID: (\d+)\]/);
+      let specificDocument = null;
+      
+      if (documentIdMatch) {
+        const documentId = parseInt(documentIdMatch[1]);
+        specificDocument = await storage.getDocument(documentId);
+      }
+      
+      // If there's a specific document referenced, prioritize it
+      if (specificDocument && specificDocument.text) {
+        context += `SPECIFIC DOCUMENT TO ANALYZE:\n`;
+        context += `Document: ${specificDocument.originalName}\n`;
+        context += `Content: ${specificDocument.text}\n`;
+        context += `---\n\n`;
+      }
+      
       if (relevantDocs.length > 0) {
-        context += "Available documents for analysis:\n";
+        context += "Available documents for additional context:\n";
         relevantDocs.forEach(doc => {
-          context += `Document: ${doc.originalName}\n`;
-          context += `Content: ${doc.text?.slice(0, 1500)}${doc.text && doc.text.length > 1500 ? "..." : ""}\n`;
-          context += `---\n`;
+          if (!specificDocument || doc.id !== specificDocument.id) {
+            context += `Document: ${doc.originalName}\n`;
+            context += `Content: ${doc.text?.slice(0, 1000)}${doc.text && doc.text.length > 1000 ? "..." : ""}\n`;
+            context += `---\n`;
+          }
         });
         context += "\n";
       }
       
       if (bpnKnowledge.length > 0) {
-        context += "BPN Knowledge Base:\n";
+        context += "BPN Organization Knowledge:\n";
         bpnKnowledge.slice(0, 3).forEach(kb => {
           context += `- ${kb.title}: ${kb.content.slice(0, 300)}...\n`;
         });
         context += "\n";
       }
       
-      context += `User question: ${prompt}\n\n`;
-      context += "Please provide a helpful response based on the available information. If you reference any documents or knowledge base articles, mention them in your response.";
+      // Clean the prompt from document references
+      const cleanPrompt = prompt.replace(/\[Document:.*?- ID: \d+\]/g, '').trim();
+      
+      context += `User question: ${cleanPrompt}\n\n`;
+      context += "Please provide a comprehensive response based on the available information. If you analyze documents, provide specific insights from their content. If you reference any documents or knowledge base articles, mention them clearly in your response.";
 
       return await geminiService.generateResponse(context);
     } catch (error) {
