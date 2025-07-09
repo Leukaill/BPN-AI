@@ -134,8 +134,22 @@ Key entities include:
 - **Document expiration** - 48-hour automatic cleanup
 - **Future offline capability** - Designed for local LLM integration
 
+## Recent Changes (January 2025)
+
+### Document Processing System Upgrade ✅
+- **Advanced Chunking System**: Implemented intelligent text chunking with 1000-character chunks and 200-character overlap
+- **Vector Embeddings**: Full Google Gemini integration for semantic search using cosine similarity
+- **Robust Error Handling**: Added timeouts, batch processing, and fallback mechanisms to prevent crashes
+- **Performance Optimization**: Batched embedding generation and memory-based chunk storage
+- **Enhanced File Support**: Improved PDF, DOCX, DOC, and TXT processing with dynamic imports
+
+### Core Workflow Implementation ✅
+1. **Upload → Extract text** (pdf-parse, mammoth libraries)
+2. **Process → Chunk + embed + store** (intelligent chunking with overlap)
+3. **Query → Find similar chunks → Generate response** (vector similarity search)
+
 ### Future Enhancements
 - **Microsoft Graph Integration** - SharePoint and OneDrive support
 - **Local LLM Support** - Ollama integration for offline AI
 - **Toggle modes** - Switch between online and local AI
-- **Enhanced document processing** - Additional file format support
+- **Vector Database** - Upgrade from memory storage to persistent vector DB

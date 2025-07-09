@@ -23,66 +23,93 @@ class DocumentProcessor {
     try {
       console.log(`Processing document: ${document.originalName}`);
       
-      // Step 1: Extract text from document
-      const extractedText = await this.extractTextFromFile(document);
+      // Step 1: Extract text from document with timeout
+      const extractedText = await Promise.race([
+        this.extractTextFromFile(document),
+        new Promise<string>((_, reject) => 
+          setTimeout(() => reject(new Error('Document processing timeout')), 30000)
+        )
+      ]);
+      
       if (!extractedText || extractedText.trim().length === 0) {
         console.log(`Failed to extract text from: ${document.originalName}`);
+        await storage.updateDocumentText(document.id, `Document "${document.originalName}" uploaded but text extraction failed.`);
         return;
       }
 
       // Step 2: Store the full text
       await storage.updateDocumentText(document.id, extractedText);
+      console.log(`Stored text for ${document.originalName} (${extractedText.length} characters)`);
       
       // Step 3: Chunk the text for better retrieval
       const chunks = this.chunkText(extractedText);
       console.log(`Created ${chunks.length} chunks from ${document.originalName}`);
       
-      // Step 4: Generate embeddings for each chunk
+      // Step 4: Generate embeddings for each chunk (with limited concurrency)
       const documentChunks: DocumentChunk[] = [];
-      for (let i = 0; i < chunks.length; i++) {
-        try {
-          const embedding = await this.generateEmbedding(chunks[i]);
-          const chunk: DocumentChunk = {
-            id: `${document.id}_chunk_${i}`,
-            content: chunks[i],
-            metadata: {
-              documentId: document.id,
-              source: document.originalName,
-              chunkIndex: i
-            },
-            embedding
-          };
-          documentChunks.push(chunk);
-        } catch (embeddingError) {
-          console.error(`Error generating embedding for chunk ${i}:`, embeddingError);
-          // Store chunk without embedding as fallback
-          const chunk: DocumentChunk = {
-            id: `${document.id}_chunk_${i}`,
-            content: chunks[i],
-            metadata: {
-              documentId: document.id,
-              source: document.originalName,
-              chunkIndex: i
-            }
-          };
-          documentChunks.push(chunk);
+      const BATCH_SIZE = 3; // Process chunks in batches to avoid overload
+      
+      for (let i = 0; i < chunks.length; i += BATCH_SIZE) {
+        const batch = chunks.slice(i, i + BATCH_SIZE);
+        const batchPromises = batch.map(async (chunk, batchIndex) => {
+          const chunkIndex = i + batchIndex;
+          try {
+            const embedding = await this.generateEmbedding(chunk);
+            return {
+              id: `${document.id}_chunk_${chunkIndex}`,
+              content: chunk,
+              metadata: {
+                documentId: document.id,
+                source: document.originalName,
+                chunkIndex
+              },
+              embedding
+            };
+          } catch (embeddingError) {
+            console.warn(`Error generating embedding for chunk ${chunkIndex}:`, embeddingError.message);
+            return {
+              id: `${document.id}_chunk_${chunkIndex}`,
+              content: chunk,
+              metadata: {
+                documentId: document.id,
+                source: document.originalName,
+                chunkIndex
+              }
+            };
+          }
+        });
+        
+        const batchResults = await Promise.all(batchPromises);
+        documentChunks.push(...batchResults);
+        
+        // Small delay between batches to prevent API rate limiting
+        if (i + BATCH_SIZE < chunks.length) {
+          await new Promise(resolve => setTimeout(resolve, 500));
         }
       }
       
-      // Step 5: Store chunks in memory (in production, use vector database)
+      // Step 5: Store chunks in memory
       this.documentChunks.set(document.id, documentChunks);
+      console.log(`Stored ${documentChunks.length} chunks for ${document.originalName}`);
       
       // Step 6: Store aggregated embedding for the full document
       try {
-        const fullDocEmbedding = await this.generateEmbedding(extractedText.slice(0, 2000)); // Use first 2000 chars for doc embedding
+        const fullDocEmbedding = await this.generateEmbedding(extractedText.slice(0, 1500));
         await storage.updateDocumentEmbedding(document.id, JSON.stringify(fullDocEmbedding));
+        console.log(`Generated document embedding for ${document.originalName}`);
       } catch (embeddingError) {
-        console.error("Full document embedding generation error:", embeddingError);
+        console.warn("Full document embedding generation failed:", embeddingError.message);
       }
       
-      console.log(`Document processed successfully: ${document.originalName} (${extractedText.length} characters, ${chunks.length} chunks)`);
+      console.log(`✅ Document processed successfully: ${document.originalName} (${extractedText.length} characters, ${chunks.length} chunks)`);
     } catch (error) {
-      console.error("Document processing error:", error);
+      console.error(`❌ Document processing failed for ${document.originalName}:`, error.message);
+      // Ensure we store something in the database even if processing fails
+      try {
+        await storage.updateDocumentText(document.id, `Document "${document.originalName}" uploaded but processing failed: ${error.message}`);
+      } catch (dbError) {
+        console.error("Failed to update document with error message:", dbError);
+      }
     }
   }
 
