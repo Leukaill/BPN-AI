@@ -36,7 +36,12 @@ class AIService {
       if (specificDocument && specificDocument.text) {
         context += `SPECIFIC DOCUMENT TO ANALYZE:\n`;
         context += `Document: ${specificDocument.originalName}\n`;
-        context += `Content: ${specificDocument.text}\n`;
+        context += `Full Content: ${specificDocument.text}\n`;
+        context += `---\n\n`;
+      } else if (specificDocument && !specificDocument.text) {
+        context += `DOCUMENT STATUS:\n`;
+        context += `Document: ${specificDocument.originalName}\n`;
+        context += `Status: Document is still being processed or text extraction failed.\n`;
         context += `---\n\n`;
       }
       

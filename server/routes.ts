@@ -175,8 +175,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         path: req.file.path,
       });
       
-      // Process document in background
-      documentProcessor.processDocument(document);
+      // Process document immediately and wait for completion
+      await documentProcessor.processDocument(document);
       
       res.status(201).json(document);
     } catch (error) {

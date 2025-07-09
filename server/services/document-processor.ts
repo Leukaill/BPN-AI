@@ -10,9 +10,12 @@ let mammoth: any;
 
 async function loadDependencies() {
   try {
-    // Use require instead of import to avoid module loading issues
-    pdfParse = require("pdf-parse");
-    mammoth = require("mammoth");
+    // Use dynamic import for ES modules
+    const pdfParseModule = await import("pdf-parse");
+    const mammothModule = await import("mammoth");
+    
+    pdfParse = pdfParseModule.default;
+    mammoth = mammothModule.default;
     console.log("Document processing dependencies loaded successfully");
   } catch (error) {
     console.error("Failed to load document processing dependencies:", error);
@@ -34,12 +37,16 @@ class DocumentProcessor {
       await this.initialize();
       
       const extractedText = await this.extractText(document);
-      if (extractedText) {
+      if (extractedText && extractedText.trim().length > 0) {
         await storage.updateDocumentText(document.id, extractedText);
         
         // Generate embedding
-        const embedding = await aiService.generateEmbedding(extractedText);
-        await storage.updateDocumentEmbedding(document.id, JSON.stringify(embedding));
+        try {
+          const embedding = await aiService.generateEmbedding(extractedText);
+          await storage.updateDocumentEmbedding(document.id, JSON.stringify(embedding));
+        } catch (embeddingError) {
+          console.error("Embedding generation error:", embeddingError);
+        }
         
         console.log(`Document processed: ${document.originalName} (${extractedText.length} characters)`);
       } else {
@@ -84,7 +91,7 @@ class DocumentProcessor {
       }
       
       const data = await pdfParse(buffer);
-      return data.text;
+      return data.text || "";
     } catch (error) {
       console.error("PDF extraction error:", error);
       return null;
@@ -98,7 +105,7 @@ class DocumentProcessor {
       }
       
       const result = await mammoth.extractRawText({ buffer });
-      return result.value;
+      return result.value || "";
     } catch (error) {
       console.error("DOCX extraction error:", error);
       return null;
