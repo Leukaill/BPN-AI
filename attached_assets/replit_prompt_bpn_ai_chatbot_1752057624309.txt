@@ -1,0 +1,57 @@
+Before you begin, ask me any important questions you need to clarify — especially about UI details, functionalities, or backend logic. Make sure you understand the full scope before coding.
+
+---
+
+I want to build a secure, modern, and luxurious AI chatbot for internal use in my organization (BPN).
+
+### 🎯 Functional Goals:
+
+1. The chatbot should look like Google Gemini but use the following BPN brand colors:
+   - Turquoise: #00728e
+   - Green: #a8cb63
+   - Grey: #e3e3e3
+   - White: #ffffff
+   - Black: #000000
+
+2. The UI should be built using **React + Tailwind CSS**, with a premium and elegant look:
+   - Soft shadows
+   - Rounded corners
+   - Minimalist layout
+   - Smooth animations
+   - Chat window inspired by Gemini with a left panel (for history/menus) and right main area
+
+3. Chatbot Functionalities:
+   - Upload documents (PDF, DOCX, etc.)
+   - Query and extract information from uploaded documents
+   - Help write reports using data from multiple files
+   - Answer questions using reasoning and context
+   - Use knowledge scraped from www.bpn.rw
+
+4. Backend:
+   - Node.js + Express server
+   - File upload support
+   - Simple vector database like Chroma for document embeddings
+   - Query engine using LangChain or LlamaIndex
+
+5. AI:
+   - Use a free API like OpenRouter or HuggingFace for now
+   - Later, I want to replace this with a local LLM (like Mistral or LLaMA via Ollama)
+
+6. Future Integration:
+   - Include a placeholder module for SharePoint and OneDrive (via Microsoft Graph API)
+   - Add toggle mode for "Online LLM" and "Local LLM"
+
+7. Data Security:
+   - All data should be stored locally
+   - The AI should run entirely offline later, when I integrate my own LLM
+
+---
+
+🛠 Please generate:
+- A full React frontend
+- A modular Express backend
+- Tailwind CSS integration
+- Example code for document uploading, embedding, and querying
+- Placeholder for SharePoint/OneDrive module
+- Web scraping logic for www.bpn.rw
+- Code structured cleanly and ready to scale
