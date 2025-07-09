@@ -38,6 +38,10 @@ class DocumentProcessor {
         // Generate embedding
         const embedding = await aiService.generateEmbedding(extractedText);
         await storage.updateDocumentEmbedding(document.id, JSON.stringify(embedding));
+        
+        console.log(`Document processed: ${document.originalName} (${extractedText.length} characters)`);
+      } else {
+        console.log(`Failed to extract text from: ${document.originalName}`);
       }
     } catch (error) {
       console.error("Document processing error:", error);

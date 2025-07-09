@@ -99,9 +99,29 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
       const response = await apiRequest("POST", "/api/documents", formData);
       const document = await response.json();
       
-      // Send a message about the uploaded file
-      const uploadMessage = `I've uploaded a document: ${document.originalName}. Please analyze it and provide insights.`;
-      sendMessageMutation.mutate(uploadMessage);
+      // Automatically send a message about the uploaded file
+      const uploadMessage = `I've uploaded a file: ${document.originalName}. Please analyze this document and tell me what it contains.`;
+      if (currentChatId) {
+        sendMessageMutation.mutate(uploadMessage);
+      } else {
+        // Create new chat and send message
+        const chatResponse = await apiRequest("POST", "/api/chats", {
+          title: `Document Analysis: ${document.originalName}`,
+        });
+        const chat = await chatResponse.json();
+        onChatCreated(chat.id);
+        
+        // Send message to new chat
+        await apiRequest("POST", `/api/chats/${chat.id}/messages`, {
+          role: "user",
+          content: uploadMessage,
+        });
+        
+        queryClient.invalidateQueries({ queryKey: ["/api/chats"] });
+        queryClient.invalidateQueries({ 
+          queryKey: ["/api/chats", chat.id, "messages"] 
+        });
+      }
     } catch (error) {
       console.error("File upload failed:", error);
     } finally {
@@ -130,15 +150,15 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
               <Bot className="text-white text-xl" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-bpn-black">BPN AI Assistant</h2>
-              <p className="text-sm text-bpn-black/70">Powered by Advanced Language Models</p>
+              <h2 className="text-xl font-bold text-foreground">BPN AI Assistant</h2>
+              <p className="text-sm text-foreground/70">Powered by Advanced Language Models</p>
             </div>
           </div>
           <div className="flex items-center space-x-3">
             <LiquidGlass className="rounded-full px-4 py-2 animate-morphing">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-bpn-green rounded-full animate-pulse"></div>
-                <span className="text-sm text-bpn-black font-medium">Online</span>
+                <span className="text-sm text-foreground font-medium">Online</span>
               </div>
             </LiquidGlass>
             <Button
@@ -163,10 +183,10 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                   <div className="liquid-bubble w-24 h-24 bg-gradient-to-br from-bpn-turquoise to-bpn-green rounded-full mx-auto mb-6 flex items-center justify-center">
                     <Bot className="text-white text-3xl" />
                   </div>
-                  <h2 className="text-3xl font-bold text-bpn-black mb-4">
+                  <h2 className="text-3xl font-bold text-foreground mb-4">
                     Meet BPN AI, your personal AI assistant
                   </h2>
-                  <p className="text-bpn-black/70 max-w-2xl mx-auto">
+                  <p className="text-foreground/70 max-w-2xl mx-auto">
                     I can help you analyze documents, extract information, generate reports, and answer questions using data from your uploaded files and BPN's knowledge base.
                   </p>
                 </div>

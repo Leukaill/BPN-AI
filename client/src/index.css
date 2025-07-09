@@ -30,6 +30,7 @@
   --bpn-grey: hsl(0, 0%, 89%);
   --bpn-white: hsl(0, 0%, 100%);
   --bpn-black: hsl(0, 0%, 0%);
+  --bpn-blue: hsl(215, 100%, 50%); /* Blue color from shared file */
 }
 
 .dark {
@@ -70,6 +71,7 @@
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  color: hsl(var(--foreground));
 }
 
 .liquid-glass-strong {
@@ -77,11 +79,24 @@
   backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.25);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  color: hsl(var(--foreground));
+}
+
+.dark .liquid-glass {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: hsl(var(--foreground));
+}
+
+.dark .liquid-glass-strong {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: hsl(var(--foreground));
 }
 
 .liquid-gradient {
-  background: linear-gradient(45deg, #00728e, #a8cb63, #00728e);
-  background-size: 200% 200%;
+  background: linear-gradient(45deg, #00728e, #0080ff, #a8cb63, #00728e);
+  background-size: 300% 300%;
   animation: gradientShift 8s ease infinite;
 }
 
@@ -125,6 +140,17 @@
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  color: hsl(var(--foreground));
+}
+
+.chat-message.user {
+  background: rgba(0, 128, 255, 0.15);
+  border-color: rgba(0, 128, 255, 0.3);
+}
+
+.chat-message.assistant {
+  background: rgba(0, 114, 142, 0.15);
+  border-color: rgba(0, 114, 142, 0.3);
 }
 
 .floating-elements {

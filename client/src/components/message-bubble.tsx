@@ -32,10 +32,10 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           )}
           <div className="flex-1">
             <div className="flex items-center space-x-2 mb-1">
-              <span className="text-xs font-medium text-bpn-black/70">
+              <span className="text-xs font-medium text-foreground/70">
                 {isUser ? "You" : "BPN AI"}
               </span>
-              <span className="text-xs text-bpn-black/50">
+              <span className="text-xs text-foreground/50">
                 {formatTime(message.createdAt)}
               </span>
             </div>
@@ -48,17 +48,17 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         </div>
 
         <LiquidGlass
-          className={`p-4 liquid-bubble animate-morphing ${
+          className={`p-4 liquid-bubble animate-morphing chat-message ${
             isUser 
-              ? "message-bubble-user" 
-              : "message-bubble-ai"
+              ? "user" 
+              : "assistant"
           }`}
         >
           <div className="space-y-3">
             {hasAttachments && (
               <div className="flex items-center space-x-2">
-                <FileText className="w-4 h-4 text-white/70" />
-                <span className="text-xs text-white/70">
+                <FileText className={`w-4 h-4 ${isUser ? "text-white/70" : "text-foreground/70"}`} />
+                <span className={`text-xs ${isUser ? "text-white/70" : "text-foreground/70"}`}>
                   {/* TODO: Display actual attachment info */}
                   Attachment included
                 </span>
@@ -66,7 +66,9 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             )}
             
             <div className="prose prose-sm max-w-none">
-              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              <p className={`text-sm whitespace-pre-wrap ${isUser ? "text-white" : "text-foreground"}`}>
+                {message.content}
+              </p>
             </div>
 
             {!isUser && (

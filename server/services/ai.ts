@@ -15,7 +15,7 @@ class AIService {
     try {
       // Get user's documents for context
       const userDocuments = await storage.getUserDocuments(userId);
-      const relevantDocs = userDocuments.filter(doc => doc.extractedText);
+      const relevantDocs = userDocuments.filter(doc => doc.text && doc.text.length > 0);
       
       // Get BPN knowledge for context
       const bpnKnowledge = await storage.getBpnKnowledge();
@@ -24,9 +24,11 @@ class AIService {
       let context = "You are BPN AI Assistant, a helpful AI assistant for BPN organization. You are professional, knowledgeable, and provide accurate information.\n\n";
       
       if (relevantDocs.length > 0) {
-        context += "Available documents:\n";
+        context += "Available documents for analysis:\n";
         relevantDocs.forEach(doc => {
-          context += `- ${doc.originalName}: ${doc.extractedText?.slice(0, 500)}...\n`;
+          context += `Document: ${doc.originalName}\n`;
+          context += `Content: ${doc.text?.slice(0, 1500)}${doc.text && doc.text.length > 1500 ? "..." : ""}\n`;
+          context += `---\n`;
         });
         context += "\n";
       }
@@ -58,7 +60,7 @@ class AIService {
       );
 
       const validDocuments = documents.filter(doc => 
-        doc && doc.userId === userId && doc.extractedText
+        doc && doc.userId === userId && doc.text
       );
 
       if (validDocuments.length === 0) {
@@ -69,7 +71,7 @@ class AIService {
       
       validDocuments.forEach(doc => {
         reportContext += `Document: ${doc!.originalName}\n`;
-        reportContext += `Content: ${doc!.extractedText}\n\n`;
+        reportContext += `Content: ${doc!.text}\n\n`;
       });
 
       reportContext += `Report Requirements: ${prompt}\n\n`;
