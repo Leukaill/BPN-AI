@@ -15,7 +15,7 @@ class AIService {
     try {
       // Get user's documents for context
       const userDocuments = await storage.getUserDocuments(userId);
-      const relevantDocs = userDocuments.filter(doc => doc.text && doc.text.length > 0);
+      const relevantDocs = userDocuments.filter(doc => doc.extractedText && doc.extractedText.length > 0);
       
       // Get BPN knowledge for context
       const bpnKnowledge = await storage.getBpnKnowledge();
@@ -33,12 +33,12 @@ class AIService {
       }
       
       // If there's a specific document referenced, prioritize it
-      if (specificDocument && specificDocument.text) {
+      if (specificDocument && specificDocument.extractedText) {
         context += `SPECIFIC DOCUMENT TO ANALYZE:\n`;
         context += `Document: ${specificDocument.originalName}\n`;
-        context += `Full Content: ${specificDocument.text}\n`;
+        context += `Full Content: ${specificDocument.extractedText}\n`;
         context += `---\n\n`;
-      } else if (specificDocument && !specificDocument.text) {
+      } else if (specificDocument && !specificDocument.extractedText) {
         context += `DOCUMENT STATUS:\n`;
         context += `Document: ${specificDocument.originalName}\n`;
         context += `Status: Document is still being processed or text extraction failed.\n`;
@@ -50,7 +50,7 @@ class AIService {
         relevantDocs.forEach(doc => {
           if (!specificDocument || doc.id !== specificDocument.id) {
             context += `Document: ${doc.originalName}\n`;
-            context += `Content: ${doc.text?.slice(0, 1000)}${doc.text && doc.text.length > 1000 ? "..." : ""}\n`;
+            context += `Content: ${doc.extractedText?.slice(0, 1000)}${doc.extractedText && doc.extractedText.length > 1000 ? "..." : ""}\n`;
             context += `---\n`;
           }
         });

@@ -184,6 +184,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reprocess document endpoint
+  app.post("/api/documents/:id/reprocess", requireAuth, async (req, res) => {
+    try {
+      const documentId = parseInt(req.params.id);
+      const document = await storage.getDocument(documentId);
+      
+      if (!document) {
+        return res.status(404).json({ message: "Document not found" });
+      }
+      
+      if (document.userId !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized to access this document" });
+      }
+
+      // Force reprocess the document
+      await documentProcessor.processDocument(document);
+      
+      // Get updated document
+      const updatedDocument = await storage.getDocument(documentId);
+      
+      res.json(updatedDocument);
+    } catch (error) {
+      console.error("Document reprocessing error:", error);
+      res.status(500).json({ message: "Failed to reprocess document" });
+    }
+  });
+
   app.delete("/api/documents/:id", requireAuth, async (req, res) => {
     try {
       const documentId = parseInt(req.params.id);

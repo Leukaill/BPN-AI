@@ -4,21 +4,19 @@ import fs from "fs";
 import path from "path";
 import { aiService } from "./ai";
 
-// Dynamic imports for document processing libraries
+// Import document processing libraries directly
 let pdfParse: any;
 let mammoth: any;
 
 async function loadDependencies() {
   try {
-    // Use dynamic import for ES modules
-    const pdfParseModule = await import("pdf-parse");
-    const mammothModule = await import("mammoth");
-    
-    pdfParse = pdfParseModule.default;
-    mammoth = mammothModule.default;
+    // Use require for CommonJS modules
+    pdfParse = require("pdf-parse");
+    mammoth = require("mammoth");
     console.log("Document processing dependencies loaded successfully");
   } catch (error) {
     console.error("Failed to load document processing dependencies:", error);
+    throw error;
   }
 }
 
@@ -87,6 +85,11 @@ class DocumentProcessor {
   private async extractPdfText(buffer: Buffer): Promise<string | null> {
     try {
       if (!pdfParse) {
+        console.log("PDF parser not loaded, attempting to load...");
+        await this.initialize();
+      }
+      
+      if (!pdfParse) {
         throw new Error("PDF parsing library not available");
       }
       
@@ -100,6 +103,11 @@ class DocumentProcessor {
 
   private async extractDocxText(buffer: Buffer): Promise<string | null> {
     try {
+      if (!mammoth) {
+        console.log("Mammoth not loaded, attempting to load...");
+        await this.initialize();
+      }
+      
       if (!mammoth) {
         throw new Error("DOCX parsing library not available");
       }
