@@ -1,0 +1,211 @@
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as pdf from 'pdf-parse';
+import * as mammoth from 'mammoth';
+
+// Initialize Gemini API
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+
+interface DocumentChunk {
+  id: string;
+  content: string;
+  metadata: {
+    source: string;
+    page?: number;
+    chunkIndex: number;
+  };
+  embedding?: number[];
+}
+
+interface DocumentStore {
+  chunks: DocumentChunk[];
+  embeddings: Map<string, number[]>;
+}
+
+class DocumentProcessor {
+  private documentStore: DocumentStore = {
+    chunks: [],
+    embeddings: new Map()
+  };
+
+  // Step 1: Extract text from different file types
+  async extractTextFromFile(filePath: string): Promise<string> {
+    const ext = path.extname(filePath).toLowerCase();
+    
+    switch (ext) {
+      case '.pdf':
+        const pdfBuffer = fs.readFileSync(filePath);
+        const pdfData = await pdf(pdfBuffer);
+        return pdfData.text;
+      
+      case '.docx':
+        const docxBuffer = fs.readFileSync(filePath);
+        const docxResult = await mammoth.extractRawText({ buffer: docxBuffer });
+        return docxResult.value;
+      
+      case '.txt':
+        return fs.readFileSync(filePath, 'utf8');
+      
+      default:
+        throw new Error(`Unsupported file type: ${ext}`);
+    }
+  }
+
+  // Step 2: Split text into manageable chunks
+  chunkText(text: string, chunkSize: number = 1000, overlap: number = 200): string[] {
+    const chunks: string[] = [];
+    let start = 0;
+    
+    while (start < text.length) {
+      const end = Math.min(start + chunkSize, text.length);
+      chunks.push(text.slice(start, end));
+      start = end - overlap;
+    }
+    
+    return chunks;
+  }
+
+  // Step 3: Generate embeddings for text chunks
+  async generateEmbedding(text: string): Promise<number[]> {
+    const model = genAI.getGenerativeModel({ model: 'embedding-001' });
+    const result = await model.embedContent(text);
+    return result.embedding.values;
+  }
+
+  // Step 4: Process and store document
+  async processDocument(filePath: string): Promise<void> {
+    console.log(`Processing document: ${filePath}`);
+    
+    // Extract text
+    const text = await this.extractTextFromFile(filePath);
+    
+    // Chunk the text
+    const chunks = this.chunkText(text);
+    
+    // Generate embeddings for each chunk
+    for (let i = 0; i < chunks.length; i++) {
+      const chunkId = `${path.basename(filePath)}_chunk_${i}`;
+      const embedding = await this.generateEmbedding(chunks[i]);
+      
+      const documentChunk: DocumentChunk = {
+        id: chunkId,
+        content: chunks[i],
+        metadata: {
+          source: filePath,
+          chunkIndex: i
+        },
+        embedding
+      };
+      
+      this.documentStore.chunks.push(documentChunk);
+      this.documentStore.embeddings.set(chunkId, embedding);
+    }
+    
+    console.log(`Processed ${chunks.length} chunks from ${filePath}`);
+  }
+
+  // Step 5: Calculate similarity between vectors
+  cosineSimilarity(vecA: number[], vecB: number[]): number {
+    const dotProduct = vecA.reduce((sum, a, i) => sum + a * vecB[i], 0);
+    const magnitudeA = Math.sqrt(vecA.reduce((sum, a) => sum + a * a, 0));
+    const magnitudeB = Math.sqrt(vecB.reduce((sum, b) => sum + b * b, 0));
+    return dotProduct / (magnitudeA * magnitudeB);
+  }
+
+  // Step 6: Find relevant chunks for a query
+  async findRelevantChunks(query: string, topK: number = 5): Promise<DocumentChunk[]> {
+    const queryEmbedding = await this.generateEmbedding(query);
+    
+    const similarities = this.documentStore.chunks.map(chunk => ({
+      chunk,
+      similarity: this.cosineSimilarity(queryEmbedding, chunk.embedding!)
+    }));
+    
+    // Sort by similarity and return top K
+    similarities.sort((a, b) => b.similarity - a.similarity);
+    return similarities.slice(0, topK).map(item => item.chunk);
+  }
+
+  // Step 7: Generate response using relevant context
+  async generateResponse(userQuery: string): Promise<string> {
+    const relevantChunks = await this.findRelevantChunks(userQuery);
+    
+    // Build context from relevant chunks
+    const context = relevantChunks
+      .map(chunk => `Source: ${chunk.metadata.source}\nContent: ${chunk.content}`)
+      .join('\n\n---\n\n');
+    
+    // Create the prompt with context
+    const prompt = `
+Based on the following document excerpts, please answer the user's question:
+
+CONTEXT:
+${context}
+
+USER QUESTION: ${userQuery}
+
+Please provide a comprehensive answer based on the context provided. If the context doesn't contain enough information to answer the question, please say so.
+`;
+
+    // Generate response using Gemini
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const result = await model.generateContent(prompt);
+    
+    return result.response.text();
+  }
+}
+
+// Usage example
+async function main() {
+  const processor = new DocumentProcessor();
+  
+  // Process documents
+  await processor.processDocument('./documents/manual.pdf');
+  await processor.processDocument('./documents/report.docx');
+  
+  // Chat with the documents
+  const userQuery = "What are the main findings in the report?";
+  const response = await processor.generateResponse(userQuery);
+  
+  console.log("AI Response:", response);
+}
+
+// Alternative: Using Ollama instead of Gemini
+class OllamaDocumentProcessor extends DocumentProcessor {
+  async generateEmbedding(text: string): Promise<number[]> {
+    const response = await fetch('http://localhost:11434/api/embeddings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'nomic-embed-text',
+        prompt: text
+      })
+    });
+    
+    const data = await response.json();
+    return data.embedding;
+  }
+  
+  async generateResponse(userQuery: string): Promise<string> {
+    const relevantChunks = await this.findRelevantChunks(userQuery);
+    const context = relevantChunks
+      .map(chunk => `${chunk.content}`)
+      .join('\n\n');
+    
+    const response = await fetch('http://localhost:11434/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama2',
+        prompt: `Context: ${context}\n\nQuestion: ${userQuery}\n\nAnswer:`,
+        stream: false
+      })
+    });
+    
+    const data = await response.json();
+    return data.response;
+  }
+}
+
+export { DocumentProcessor, OllamaDocumentProcessor };

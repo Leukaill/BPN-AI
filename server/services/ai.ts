@@ -1,5 +1,6 @@
 import { storage } from "../storage";
 import { geminiService } from "./gemini";
+import { documentProcessor } from "./document-processor";
 
 interface AIResponse {
   content: string;
@@ -13,13 +14,6 @@ class AIService {
 
   async generateResponse(prompt: string, userId: number, chatId: number): Promise<string> {
     try {
-      // Get user's documents for context
-      const userDocuments = await storage.getUserDocuments(userId);
-      const relevantDocs = userDocuments.filter(doc => doc.extractedText && doc.extractedText.length > 0);
-      
-      // Get BPN knowledge for context
-      const bpnKnowledge = await storage.getBpnKnowledge();
-      
       // Prepare context
       let context = "You are BPN AI Assistant, a helpful AI assistant for BPN organization. You are professional, knowledgeable, and provide accurate information.\n\n";
       
@@ -32,11 +26,23 @@ class AIService {
         specificDocument = await storage.getDocument(documentId);
       }
       
-      // If there's a specific document referenced, prioritize it
+      // Clean the prompt from document references
+      const cleanPrompt = prompt.replace(/\[Document:.*?- ID: \d+\]/g, '').trim();
+      
+      // Step 1: Use vector search to find most relevant document chunks
+      const relevantContext = await documentProcessor.generateContextualResponse(cleanPrompt, userId);
+      
+      if (relevantContext && relevantContext !== "I don't have any relevant document content to answer your question. Please upload documents first.") {
+        context += "RELEVANT DOCUMENT CONTENT:\n";
+        context += relevantContext;
+        context += "\n\n";
+      }
+      
+      // Step 2: If there's a specific document referenced, get its full content too
       if (specificDocument && specificDocument.extractedText) {
-        context += `SPECIFIC DOCUMENT TO ANALYZE:\n`;
+        context += `SPECIFIC DOCUMENT ANALYSIS:\n`;
         context += `Document: ${specificDocument.originalName}\n`;
-        context += `Full Content: ${specificDocument.extractedText}\n`;
+        context += `Content: ${specificDocument.extractedText}\n`;
         context += `---\n\n`;
       } else if (specificDocument && !specificDocument.extractedText) {
         context += `DOCUMENT STATUS:\n`;
@@ -45,31 +51,19 @@ class AIService {
         context += `---\n\n`;
       }
       
-      if (relevantDocs.length > 0) {
-        context += "Available documents for additional context:\n";
-        relevantDocs.forEach(doc => {
-          if (!specificDocument || doc.id !== specificDocument.id) {
-            context += `Document: ${doc.originalName}\n`;
-            context += `Content: ${doc.extractedText?.slice(0, 1000)}${doc.extractedText && doc.extractedText.length > 1000 ? "..." : ""}\n`;
-            context += `---\n`;
-          }
-        });
-        context += "\n";
-      }
-      
+      // Step 3: Add BPN knowledge for additional context
+      const bpnKnowledge = await storage.getBpnKnowledge();
       if (bpnKnowledge.length > 0) {
         context += "BPN Organization Knowledge:\n";
-        bpnKnowledge.slice(0, 3).forEach(kb => {
-          context += `- ${kb.title}: ${kb.content.slice(0, 300)}...\n`;
+        bpnKnowledge.slice(0, 2).forEach(kb => {
+          context += `- ${kb.title}: ${kb.content.slice(0, 200)}...\n`;
         });
         context += "\n";
       }
       
-      // Clean the prompt from document references
-      const cleanPrompt = prompt.replace(/\[Document:.*?- ID: \d+\]/g, '').trim();
-      
-      context += `User question: ${cleanPrompt}\n\n`;
-      context += "Please provide a comprehensive response based on the available information. If you analyze documents, provide specific insights from their content. If you reference any documents or knowledge base articles, mention them clearly in your response.";
+      // Step 4: Add the user question and instructions
+      context += `User Question: ${cleanPrompt}\n\n`;
+      context += "Please provide a comprehensive, detailed response based on the document content above. When referencing specific information, cite the source document and chunk number. If analyzing documents, provide specific insights, recommendations, and actionable feedback.";
 
       return await geminiService.generateResponse(context);
     } catch (error) {
