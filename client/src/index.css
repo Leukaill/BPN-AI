@@ -1,0 +1,250 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(0, 0%, 0%);
+  --muted: hsl(0, 0%, 89%);
+  --muted-foreground: hsl(0, 0%, 25%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(0, 0%, 0%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(0, 0%, 0%);
+  --border: hsl(0, 0%, 89%);
+  --input: hsl(0, 0%, 89%);
+  --primary: hsl(193, 100%, 28%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(76, 42%, 70%);
+  --secondary-foreground: hsl(0, 0%, 0%);
+  --accent: hsl(76, 42%, 70%);
+  --accent-foreground: hsl(0, 0%, 0%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(193, 100%, 28%);
+  --radius: 0.5rem;
+  
+  /* BPN Brand Colors */
+  --bpn-turquoise: hsl(193, 100%, 28%);
+  --bpn-green: hsl(76, 42%, 70%);
+  --bpn-grey: hsl(0, 0%, 89%);
+  --bpn-white: hsl(0, 0%, 100%);
+  --bpn-black: hsl(0, 0%, 0%);
+}
+
+.dark {
+  --background: hsl(0, 0%, 3%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(0, 0%, 15%);
+  --muted-foreground: hsl(0, 0%, 65%);
+  --popover: hsl(0, 0%, 3%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(0, 0%, 3%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(0, 0%, 15%);
+  --input: hsl(0, 0%, 15%);
+  --primary: hsl(193, 100%, 28%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(76, 42%, 70%);
+  --secondary-foreground: hsl(0, 0%, 0%);
+  --accent: hsl(76, 42%, 70%);
+  --accent-foreground: hsl(0, 0%, 0%);
+  --destructive: hsl(0, 62%, 31%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(193, 100%, 28%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+/* Liquid Glass Effects */
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.liquid-glass-strong {
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.liquid-gradient {
+  background: linear-gradient(45deg, #00728e, #a8cb63, #00728e);
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease infinite;
+}
+
+.liquid-bubble {
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-bubble::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(168, 203, 99, 0.3) 0%, transparent 70%);
+  animation: liquidFlow 10s linear infinite;
+}
+
+.ripple-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-effect::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(0, 114, 142, 0.3);
+  transform: translate(-50%, -50%);
+  animation: ripple 0.6s ease-out;
+}
+
+.chat-message {
+  position: relative;
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.floating-elements {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.liquid-input {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.liquid-input:focus {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(0, 114, 142, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 114, 142, 0.1);
+}
+
+.sidebar-glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.message-bubble-user {
+  background: linear-gradient(135deg, rgba(0, 114, 142, 0.8), rgba(0, 114, 142, 0.6));
+  color: white;
+}
+
+.message-bubble-ai {
+  background: rgba(255, 255, 255, 0.8);
+  color: #000000;
+}
+
+/* Animations */
+@keyframes liquidFlow {
+  0%, 100% { 
+    transform: translateX(0%) rotate(0deg); 
+  }
+  50% { 
+    transform: translateX(100%) rotate(180deg); 
+  }
+}
+
+@keyframes bubbleFloat {
+  0%, 100% { 
+    transform: translateY(0px) scale(1); 
+  }
+  50% { 
+    transform: translateY(-20px) scale(1.05); 
+  }
+}
+
+@keyframes ripple {
+  0% { 
+    transform: scale(0); 
+    opacity: 1; 
+  }
+  100% { 
+    transform: scale(4); 
+    opacity: 0; 
+  }
+}
+
+@keyframes morphing {
+  0%, 100% { 
+    border-radius: 20px; 
+  }
+  50% { 
+    border-radius: 50px; 
+  }
+}
+
+@keyframes gradientShift {
+  0%, 100% { 
+    background-position: 0% 50%; 
+  }
+  50% { 
+    background-position: 100% 50%; 
+  }
+}
+
+.animate-liquid-flow {
+  animation: liquidFlow 8s ease-in-out infinite;
+}
+
+.animate-bubble-float {
+  animation: bubbleFloat 6s ease-in-out infinite;
+}
+
+.animate-ripple {
+  animation: ripple 0.6s ease-out;
+}
+
+.animate-morphing {
+  animation: morphing 4s ease-in-out infinite;
+}
+
+.animate-gradient-shift {
+  animation: gradientShift 10s ease-in-out infinite;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 114, 142, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 114, 142, 0.5);
+}
