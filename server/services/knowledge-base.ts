@@ -112,6 +112,10 @@ class KnowledgeBaseService {
       console.log(`✓ Text extracted using method: ${extractionResult.method}`);
       console.log(`✓ Extracted ${extractionResult.text.length} characters`);
 
+      // Sanitize text to remove null bytes and invalid UTF-8 sequences
+      const sanitizedText = this.sanitizeText(extractionResult.text);
+      console.log(`✓ Sanitized text: ${sanitizedText.length} characters`);
+
       // Create knowledge base entry
       const title =
         customTitle ||
@@ -119,7 +123,7 @@ class KnowledgeBaseService {
       const knowledgeData: InsertKnowledgeBase = {
         userId,
         title,
-        content: extractionResult.text,
+        content: sanitizedText,
         source: "file_upload",
         filename: file.originalname,
         mimeType: file.mimetype,
@@ -130,7 +134,7 @@ class KnowledgeBaseService {
       // Generate embedding for semantic search in background
       this.generateEmbeddingAsync(
         knowledgeBase.id,
-        extractionResult.text,
+        sanitizedText,
       ).catch((error) => {
         console.warn(
           `Failed to generate embedding for ${knowledgeBase.id}:`,
@@ -488,6 +492,26 @@ class KnowledgeBaseService {
     const textExtensions = ['.txt', '.md', '.csv', '.json', '.xml', '.html', '.rtf'];
     const ext = path.extname(filename).toLowerCase();
     return textExtensions.includes(ext);
+  }
+
+  private sanitizeText(text: string): string {
+    // Remove null bytes and other problematic characters
+    let sanitized = text
+      .replace(/\x00/g, '') // Remove null bytes
+      .replace(/[\x01-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') // Remove control characters except \t, \n, \r
+      .replace(/\uFFFD/g, '') // Remove replacement characters
+      .trim();
+
+    // Ensure valid UTF-8 by re-encoding
+    try {
+      sanitized = Buffer.from(sanitized, 'utf8').toString('utf8');
+    } catch (error) {
+      console.warn('Text encoding issue, using fallback sanitization');
+      // Fallback: remove all non-printable characters
+      sanitized = sanitized.replace(/[^\x20-\x7E\x0A\x0D\x09]/g, '');
+    }
+
+    return sanitized;
   }
 
   private generateTitle(filename: string, content: string): string {
