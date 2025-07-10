@@ -301,17 +301,36 @@ class KnowledgeBaseService {
 
     try {
       const dataBuffer = fs.readFileSync(filePath);
-      const data = await pdfParse(dataBuffer, {
-        max: 0, // Parse all pages
-        version: 'v1.10.100'
-      });
+      
+      // Additional validation to ensure it's a valid PDF
+      if (!dataBuffer.subarray(0, 4).toString().includes('%PDF')) {
+        throw new Error('File does not appear to be a valid PDF');
+      }
+      
+      const data = await pdfParse(dataBuffer);
+      
+      // Validate extracted text is readable and not binary data
+      if (!data.text || data.text.length < 10) {
+        throw new Error('No readable text found in PDF');
+      }
+      
+      // Check if extracted text contains too many binary characters
+      const binaryCharCount = (data.text.match(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\xFF]/g) || []).length;
+      const binaryRatio = binaryCharCount / data.text.length;
+      
+      if (binaryRatio > 0.3) {
+        throw new Error('Extracted text contains too much binary data');
+      }
+      
+      console.log(`✓ Successfully extracted ${data.text.length} characters from PDF`);
       
       return {
-        text: data.text,
+        text: data.text.trim(),
         success: true,
         method: "pdf-parse",
       };
     } catch (error) {
+      console.log(`PDF extraction failed: ${error.message}`);
       return {
         text: "",
         success: false,
@@ -495,6 +514,21 @@ class KnowledgeBaseService {
   }
 
   private sanitizeText(text: string): string {
+    if (!text) return "";
+    
+    // Check for binary/corrupted data patterns
+    const binaryCharCount = (text.match(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\xFF]/g) || []).length;
+    const binaryRatio = binaryCharCount / text.length;
+    
+    if (binaryRatio > 0.2) {
+      throw new Error('Text contains too much binary/corrupted data');
+    }
+    
+    // Check for PDF internal structure indicators
+    if (text.includes('%PDF-') || (text.includes('obj') && text.includes('endobj'))) {
+      throw new Error('Text appears to be raw PDF structure data, not readable content');
+    }
+    
     // Remove null bytes and other problematic characters
     let sanitized = text
       .replace(/\x00/g, '') // Remove null bytes
