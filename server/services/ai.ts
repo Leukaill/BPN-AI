@@ -65,13 +65,31 @@ Always aim to be helpful, accurate, and engaging in your responses.\n\n`;
       }
       
       // Step 3: Add user knowledge base for additional context
-      const userKnowledge = await knowledgeBaseService.searchKnowledge(cleanPrompt, userId, 3);
+      const userKnowledge = await knowledgeBaseService.searchKnowledge(cleanPrompt, userId, 5);
+      console.log(`Found ${userKnowledge.length} knowledge base entries for query: "${cleanPrompt}"`);
+      
       if (userKnowledge.length > 0) {
         context += "USER KNOWLEDGE BASE:\n";
         userKnowledge.forEach(kb => {
-          context += `- ${kb.title}: ${kb.content.slice(0, 300)}...\n`;
+          context += `Document: ${kb.title}\n`;
+          context += `Content: ${kb.content.slice(0, 1000)}...\n`;
+          context += `---\n`;
         });
         context += "\n";
+      } else {
+        // If no specific match, get all user knowledge for broader context
+        const allUserKnowledge = await storage.getUserKnowledgeBase(userId);
+        console.log(`No specific matches found. Found ${allUserKnowledge.length} total knowledge entries.`);
+        
+        if (allUserKnowledge.length > 0) {
+          context += "USER KNOWLEDGE BASE (ALL AVAILABLE):\n";
+          allUserKnowledge.slice(0, 3).forEach(kb => {
+            context += `Document: ${kb.title}\n`;
+            context += `Content: ${kb.content.slice(0, 1000)}...\n`;
+            context += `---\n`;
+          });
+          context += "\n";
+        }
       }
       
       // Step 4: Add BPN knowledge for additional context
@@ -87,12 +105,14 @@ Always aim to be helpful, accurate, and engaging in your responses.\n\n`;
       // Step 5: Add the user question and instructions
       context += `User Question: ${cleanPrompt}\n\n`;
       context += `Instructions: 
-- Provide a comprehensive, detailed response based on the document content and knowledge base above
-- When referencing specific information, cite the source document and chunk number
-- If analyzing documents, provide specific insights, recommendations, and actionable feedback
+- IMPORTANT: If the user asks about ANY document, survey, or content that appears in the USER KNOWLEDGE BASE above, respond with detailed information from that knowledge base content
+- Base your response primarily on the knowledge base content provided above
+- If you see document content in the knowledge base, analyze it thoroughly and provide specific insights
+- When referencing information, cite the source document title
 - Be conversational and engaging, like you're having a natural conversation with a colleague
-- Use "I" statements and personal touches to make responses feel more human
-- Ask clarifying questions when appropriate to better help the user`;
+- Use "I" statements and acknowledge that you have access to their uploaded documents
+- If asked about a specific document or survey, provide detailed analysis based on the content shown above
+- Never claim you don't have access to documents that are clearly shown in the knowledge base content above`;
 
       return await geminiService.generateResponse(context);
     } catch (error) {
