@@ -144,6 +144,12 @@ Key entities include:
 - **Security**: All authentication and file upload security measures properly implemented
 - **Performance**: Document processing now handles large files efficiently with proper error handling
 
+### AI Response Formatting Enhancement ✅
+- **Clean Text Output**: Enhanced AI service to remove asterisks (*) from responses for better readability
+- **Improved Formatting**: Added automatic response cleanup to ensure clean, professional text output
+- **Better User Experience**: Responses now use natural, flowing text without markdown-style formatting
+- **Consistent Styling**: Both chat responses and report generation now produce clean, readable text
+
 ### Enhanced Document Processing System ✅
 - **Fixed PDF Text Extraction**: Resolved PDF binary data issues with improved validation and error handling
 - **Enhanced File Upload System**: Increased file size limit to 50MB and added support for more file types

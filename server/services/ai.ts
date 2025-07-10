@@ -163,6 +163,16 @@ Your personality:
 - Use examples and analogies to explain complex topics
 - Structure responses clearly with headings and bullet points when appropriate
 
+FORMATTING REQUIREMENTS:
+- NEVER use asterisks (*) for emphasis or formatting
+- Use clean, readable text without markdown asterisks
+- For emphasis, use CAPITAL LETTERS or rephrase for natural emphasis
+- Use line breaks and paragraphs for better readability
+- When listing items, use numbers (1., 2., 3.) or simple dashes (-)
+- Keep text formatting simple and clean
+- Avoid any markdown-style formatting like *text*, **text**, or ***text***
+- Write in a natural, flowing style that's easy to read
+
 `;
 
     // Add specific document context if available
@@ -227,6 +237,23 @@ Remember: You have access to all the document content shown above. Use it to pro
     return context;
   }
 
+  private cleanResponseFormatting(response: string): string {
+    // Remove asterisks used for emphasis and clean up formatting
+    return response
+      // Remove bold asterisks (**text** or ***text***)
+      .replace(/\*\*\*([^*]+)\*\*\*/g, '$1')
+      .replace(/\*\*([^*]+)\*\*/g, '$1')
+      // Remove italic asterisks (*text*)
+      .replace(/\*([^*]+)\*/g, '$1')
+      // Remove any remaining standalone asterisks
+      .replace(/\*+/g, '')
+      // Clean up extra whitespace
+      .replace(/\s+/g, ' ')
+      // Clean up multiple line breaks
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+
   async generateResponse(
     prompt: string,
     userId: number,
@@ -285,10 +312,13 @@ Remember: You have access to all the document content shown above. Use it to pro
       console.log(`Final context length: ${contextualPrompt.length}`);
 
       // Generate response
-      const response = await geminiService.generateResponse(contextualPrompt);
-      console.log(`Generated response length: ${response.length}`);
+      const rawResponse = await geminiService.generateResponse(contextualPrompt);
+      console.log(`Generated response length: ${rawResponse.length}`);
 
-      return response;
+      // Clean up formatting to remove asterisks and improve readability
+      const cleanResponse = this.cleanResponseFormatting(rawResponse);
+      
+      return cleanResponse;
     } catch (error) {
       console.error("AI service error:", error);
       return "I apologize, but I'm experiencing technical difficulties. Please try again later.";
@@ -326,6 +356,16 @@ REPORT GENERATION INSTRUCTIONS:
 - Provide actionable insights and recommendations
 - Cite sources when referencing specific information
 
+FORMATTING REQUIREMENTS:
+- NEVER use asterisks (*) for emphasis or formatting
+- Use clean, readable text without markdown asterisks
+- For emphasis, use CAPITAL LETTERS or rephrase for natural emphasis
+- Use line breaks and paragraphs for better readability
+- When listing items, use numbers (1., 2., 3.) or simple dashes (-)
+- Keep text formatting simple and clean
+- Avoid any markdown-style formatting like *text*, **text**, or ***text***
+- Write in a natural, flowing style that's easy to read
+
 DOCUMENTS TO ANALYZE:
 `;
 
@@ -342,10 +382,13 @@ DOCUMENTS TO ANALYZE:
 
       console.log(`Report context length: ${reportContext.length}`);
 
-      const report = await geminiService.generateResponse(reportContext);
-      console.log(`Generated report length: ${report.length}`);
+      const rawReport = await geminiService.generateResponse(reportContext);
+      console.log(`Generated report length: ${rawReport.length}`);
 
-      return report;
+      // Clean up formatting to remove asterisks and improve readability
+      const cleanReport = this.cleanResponseFormatting(rawReport);
+      
+      return cleanReport;
     } catch (error) {
       console.error("Report generation error:", error);
       return "Failed to generate report. Please try again later.";
