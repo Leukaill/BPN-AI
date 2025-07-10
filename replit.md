@@ -178,6 +178,15 @@ Key entities include:
 
 ### Recent Changes (January 2025)
 
+### Local LLM Integration & Service Enhancement ✅
+- **Migration from Gemini to Local LLM**: Complete replacement of Gemini API with local Llama 3.1 8B integration
+- **Robust Local LLM Service**: Enhanced connection handling with timeout, retry logic, and exponential backoff
+- **Comprehensive Error Handling**: Detailed error messages and connection state management
+- **Model Management**: Added model availability checking, configuration updates, and status monitoring
+- **Environment Configuration**: Support for LOCAL_LLM_URL, LOCAL_LLM_MODEL, LOCAL_LLM_TEMPERATURE, and other parameters
+- **Fallback Systems**: Improved embedding fallback with hash-based normalization when local embeddings unavailable
+- **API Testing Endpoint**: Added `/api/llm/test` for connection testing and model listing
+
 ### Enhanced Upload System & Security Overhaul ✅
 - **Advanced Error Handling**: Custom error classes (ValidationError, ProcessingError, AIServiceError) with detailed user feedback
 - **Rate Limiting**: API-wide (100 req/15min) and upload-specific (10 uploads/15min) protection against abuse
