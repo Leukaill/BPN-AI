@@ -33,7 +33,7 @@ export class LLMErrorHandler {
         // Handle specific error types
         if (error.message.includes("timeout")) {
           throw new Error(
-            `Request timed out while generating ${context}. Your local LLM may be overloaded. Please try again or check your model configuration.`
+            `Request timed out after 30 seconds while generating ${context}. Your local LLM may be overloaded or the model is loading. Please try again.`
           );
         }
         

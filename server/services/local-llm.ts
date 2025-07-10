@@ -61,11 +61,13 @@ class LocalLLMService {
       baseURL: process.env.LOCAL_LLM_URL || "http://localhost:11434",
       model: process.env.LOCAL_LLM_MODEL || "llama3.1:8b",
       temperature: parseFloat(process.env.LOCAL_LLM_TEMPERATURE || "0.7"),
-      maxTokens: parseInt(process.env.LOCAL_LLM_MAX_TOKENS || "256"), // Very small for testing
-      timeout: parseInt(process.env.LOCAL_LLM_TIMEOUT || "45000"), // 45 seconds
-      retries: parseInt(process.env.LOCAL_LLM_RETRIES || "1"), // Only 1 retry
+      maxTokens: parseInt(process.env.LOCAL_LLM_MAX_TOKENS || "256"),
+      timeout: parseInt(process.env.LOCAL_LLM_TIMEOUT || "120000"), // Increased to 2 minutes
+      retries: parseInt(process.env.LOCAL_LLM_RETRIES || "2"),
     };
-    console.log(`[LocalLLM] Configured with URL: ${this.config.baseURL}, Model: ${this.config.model}`);
+    console.log(
+      `[LocalLLM] Configured with URL: ${this.config.baseURL}, Model: ${this.config.model}`,
+    );
   }
 
   /**
@@ -80,21 +82,42 @@ class LocalLLMService {
     const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
 
     try {
+      console.log(`[LocalLLM] Making request to: ${url}`);
+      console.log(
+        `[LocalLLM] Request options:`,
+        JSON.stringify(options, null, 2),
+      );
+
       const response = await fetch(url, {
         ...options,
         signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
+
+      console.log(
+        `[LocalLLM] Response status: ${response.status} ${response.statusText}`,
+      );
+      console.log(
+        `[LocalLLM] Response headers:`,
+        Object.fromEntries(response.headers.entries()),
+      );
+
       return response;
     } catch (error) {
       clearTimeout(timeoutId);
 
-      if (retryCount < (this.config.retries || 3)) {
+      console.error(
+        `[LocalLLM] Request failed (attempt ${retryCount + 1}):`,
+        error,
+      );
+
+      if (retryCount < (this.config.retries || 2)) {
+        const delay = Math.min(1000 * Math.pow(2, retryCount), 5000); // Exponential backoff with max 5s
         console.warn(
-          `Request failed, retrying... (${retryCount + 1}/${this.config.retries})`,
+          `[LocalLLM] Retrying in ${delay}ms... (${retryCount + 1}/${this.config.retries})`,
         );
-        await this.delay(1000 * (retryCount + 1)); // Exponential backoff
+        await this.delay(delay);
         return this.makeRequest(url, options, retryCount + 1);
       }
 
@@ -136,8 +159,15 @@ class LocalLLMService {
   async generateResponse(prompt: string, options: any = {}): Promise<string> {
     this.validatePrompt(prompt);
 
+    console.log(
+      `[LocalLLM] Generating response for prompt: "${prompt.substring(0, 100)}${prompt.length > 100 ? "..." : ""}"`,
+    );
+
     // Check connection if needed
     if (!this.isConnected || this.shouldCheckConnection()) {
+      console.log(
+        `[LocalLLM] Checking connection to ${this.config.baseURL}...`,
+      );
       const connected = await this.testConnection();
       if (!connected) {
         throw new Error(
@@ -153,13 +183,21 @@ class LocalLLMService {
         prompt: prompt,
         stream: false,
         options: {
-          temperature: options.temperature || this.config.temperature || 0.7,
-          num_predict: Math.min(options.maxTokens || this.config.maxTokens || 256, 256), // Very short responses for testing
-          top_k: options.topK || 40,
-          top_p: options.topP || 0.95,
-          stop: options.stop || undefined,
+          temperature: options.temperature ?? this.config.temperature ?? 0.7,
+          num_predict: Math.min(
+            options.maxTokens ?? this.config.maxTokens ?? 256,
+            1000,
+          ),
+          top_k: options.topK ?? 40,
+          top_p: options.topP ?? 0.95,
+          stop: options.stop,
         },
       };
+
+      console.log(
+        `[LocalLLM] Request body:`,
+        JSON.stringify(requestBody, null, 2),
+      );
 
       const response = await this.makeRequest(
         `${this.config.baseURL}/api/generate`,
@@ -167,6 +205,7 @@ class LocalLLMService {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Accept: "application/json",
             "ngrok-skip-browser-warning": "true",
             "User-Agent": "Denyse-AI-Assistant/1.0",
           },
@@ -176,20 +215,34 @@ class LocalLLMService {
 
       if (!response.ok) {
         const errorText = await response.text();
+        console.error(`[LocalLLM] API Error Response:`, errorText);
         throw new Error(
           `Local LLM API error: ${response.status} ${response.statusText} - ${errorText}`,
         );
       }
 
-      const data: OllamaGenerateResponse = await response.json();
+      const responseText = await response.text();
+      console.log(`[LocalLLM] Raw response:`, responseText);
 
-      if (!data.response) {
+      let data: OllamaGenerateResponse;
+      try {
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error(`[LocalLLM] Failed to parse JSON response:`, parseError);
+        throw new Error(
+          `Invalid JSON response from local LLM: ${responseText}`,
+        );
+      }
+
+      if (!data.response && data.response !== "") {
+        console.error(`[LocalLLM] No response field in data:`, data);
         throw new Error("No response received from local LLM");
       }
 
+      console.log(`[LocalLLM] Generated response: "${data.response}"`);
       return data.response;
     } catch (error) {
-      console.error("Local LLM API error:", error);
+      console.error("[LocalLLM] Generation error:", error);
 
       if (error instanceof Error) {
         if (error.name === "AbortError") {
@@ -197,7 +250,9 @@ class LocalLLMService {
         }
         if (
           error.message.includes("fetch") ||
-          error.message.includes("network")
+          error.message.includes("network") ||
+          error.message.includes("ECONNREFUSED") ||
+          error.message.includes("ENOTFOUND")
         ) {
           this.isConnected = false;
           throw new Error(
@@ -208,6 +263,290 @@ class LocalLLMService {
       }
 
       throw error;
+    }
+  }
+
+  /**
+   * Test connection with detailed logging
+   */
+  async testConnection(): Promise<boolean> {
+    try {
+      console.log(
+        `[LocalLLM] Testing connection to ${this.config.baseURL}/api/tags...`,
+      );
+
+      const response = await this.makeRequest(
+        `${this.config.baseURL}/api/tags`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
+        },
+      );
+
+      this.isConnected = response.ok;
+      this.lastConnectionCheck = Date.now();
+
+      if (response.ok) {
+        console.log(`[LocalLLM] Connection successful!`);
+        const data = await response.json();
+        console.log(
+          `[LocalLLM] Available models:`,
+          data.models?.map((m) => m.name) || [],
+        );
+      } else {
+        console.error(
+          `[LocalLLM] Connection failed: ${response.status} ${response.statusText}`,
+        );
+      }
+
+      return this.isConnected;
+    } catch (error) {
+      console.error("[LocalLLM] Connection test failed:", error);
+      this.isConnected = false;
+      this.lastConnectionCheck = Date.now();
+      return false;
+    }
+  }
+
+  /**
+   * Get available models with better error handling
+   */
+  async getAvailableModels(): Promise<string[]> {
+    try {
+      const response = await this.makeRequest(
+        `${this.config.baseURL}/api/tags`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        console.error(
+          `[LocalLLM] Failed to get models: ${response.status} ${response.statusText}`,
+        );
+        return [];
+      }
+
+      const data: OllamaTagsResponse = await response.json();
+      const models = data.models?.map((model) => model.name) || [];
+      console.log(`[LocalLLM] Available models:`, models);
+      return models;
+    } catch (error) {
+      console.error("[LocalLLM] Error fetching available models:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Get model information
+   */
+  async getModelInfo(modelName?: string): Promise<OllamaModel | null> {
+    try {
+      const response = await this.makeRequest(
+        `${this.config.baseURL}/api/tags`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
+        },
+      );
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const data: OllamaTagsResponse = await response.json();
+      const targetModel = modelName || this.config.model;
+      return data.models.find((model) => model.name === targetModel) || null;
+    } catch (error) {
+      console.error("[LocalLLM] Error fetching model info:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Check if a specific model is available
+   */
+  async isModelAvailable(modelName?: string): Promise<boolean> {
+    const models = await this.getAvailableModels();
+    const targetModel = modelName || this.config.model;
+    const available = models.includes(targetModel);
+    console.log(`[LocalLLM] Model "${targetModel}" available: ${available}`);
+    return available;
+  }
+
+  /**
+   * Get service status with detailed information
+   */
+  async getStatus(): Promise<{
+    connected: boolean;
+    baseURL: string;
+    model: string;
+    modelAvailable: boolean;
+    availableModels: string[];
+    lastError?: string;
+  }> {
+    let lastError: string | undefined;
+
+    try {
+      const connected = await this.testConnection();
+      const availableModels = connected ? await this.getAvailableModels() : [];
+      const modelAvailable = availableModels.includes(this.config.model);
+
+      return {
+        connected,
+        baseURL: this.config.baseURL,
+        model: this.config.model,
+        modelAvailable,
+        availableModels,
+        lastError,
+      };
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : String(error);
+      return {
+        connected: false,
+        baseURL: this.config.baseURL,
+        model: this.config.model,
+        modelAvailable: false,
+        availableModels: [],
+        lastError,
+      };
+    }
+  }
+
+  /**
+   * Update configuration
+   */
+  updateConfig(newConfig: Partial<LocalLLMConfig>): void {
+    console.log(`[LocalLLM] Updating config:`, newConfig);
+    this.config = { ...this.config, ...newConfig };
+    this.isConnected = false; // Force reconnection check
+  }
+
+  /**
+   * Get current configuration
+   */
+  getConfig(): LocalLLMConfig {
+    return { ...this.config };
+  }
+
+  /**
+   * Get detailed model information
+   */
+  async getModelDetails(modelName?: string): Promise<any> {
+    try {
+      const targetModel = modelName || this.config.model;
+      console.log(`[LocalLLM] Getting details for model: ${targetModel}`);
+
+      const response = await this.makeRequest(
+        `${this.config.baseURL}/api/show`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "ngrok-skip-browser-warning": "true",
+          },
+          body: JSON.stringify({ name: targetModel }),
+        },
+      );
+
+      if (!response.ok) {
+        console.error(
+          `[LocalLLM] Failed to get model details: ${response.status} ${response.statusText}`,
+        );
+        return null;
+      }
+
+      const data = await response.json();
+      console.log(`[LocalLLM] Model details:`, data);
+
+      return {
+        name: data.name || targetModel,
+        size: data.size || "Unknown",
+        digest: data.digest || "Unknown",
+        modified: data.modified_at || "Unknown",
+        template: data.template || "Unknown",
+        parameters: data.parameters || {},
+        modelfile: data.modelfile || "Unknown",
+      };
+    } catch (error) {
+      console.error(
+        `[LocalLLM] Error fetching model details for ${modelName}:`,
+        error,
+      );
+      return null;
+    }
+  }
+
+  /**
+   * Validate that the configured model is available and working
+   */
+  async validateModel(): Promise<{
+    success: boolean;
+    message: string;
+    details?: any;
+  }> {
+    try {
+      console.log(`[LocalLLM] Validating model: ${this.config.model}`);
+
+      // Check if model is available
+      const availableModels = await this.getAvailableModels();
+      if (!availableModels.includes(this.config.model)) {
+        return {
+          success: false,
+          message: `Model "${this.config.model}" not found. Available models: ${availableModels.join(", ") || "None"}. Please run: ollama pull ${this.config.model}`,
+        };
+      }
+
+      // Test the model with a simple request
+      try {
+        console.log(`[LocalLLM] Testing model with simple request...`);
+        const testResponse = await this.generateResponse(
+          "Hello! Please respond with just 'Hi'",
+          {
+            temperature: 0.1,
+            maxTokens: 50,
+          },
+        );
+
+        if (!testResponse || testResponse.trim() === "") {
+          return {
+            success: false,
+            message: `Model "${this.config.model}" is available but not responding properly. Check your Ollama service.`,
+          };
+        }
+
+        // Get model details
+        const modelDetails = await this.getModelDetails(this.config.model);
+
+        return {
+          success: true,
+          message: `Model "${this.config.model}" is working properly. Response: "${testResponse.trim()}"`,
+          details: modelDetails,
+        };
+      } catch (testError) {
+        console.error(`[LocalLLM] Model test failed:`, testError);
+        return {
+          success: false,
+          message: `Model "${this.config.model}" test failed: ${testError.message}`,
+        };
+      }
+    } catch (error) {
+      console.error(`[LocalLLM] Model validation error:`, error);
+      return {
+        success: false,
+        message: `Error validating model "${this.config.model}": ${error.message}`,
+      };
     }
   }
 
@@ -226,8 +565,8 @@ class LocalLLMService {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Accept: "application/json",
             "ngrok-skip-browser-warning": "true",
-            "User-Agent": "Denyse-AI-Assistant/1.0",
           },
           body: JSON.stringify({
             model: this.config.model,
@@ -237,14 +576,14 @@ class LocalLLMService {
       );
 
       if (!response.ok) {
-        console.warn("Local LLM embeddings not available, using fallback");
+        console.warn("[LocalLLM] Embeddings not available, using fallback");
         return this.generateFallbackEmbedding(text);
       }
 
       const data = await response.json();
       return data.embedding || this.generateFallbackEmbedding(text);
     } catch (error) {
-      console.warn("Local LLM embedding error, using fallback:", error);
+      console.warn("[LocalLLM] Embedding error, using fallback:", error);
       return this.generateFallbackEmbedding(text);
     }
   }
@@ -279,213 +618,72 @@ class LocalLLMService {
   }
 
   /**
-   * Test connection with better error reporting
+   * Health check method to diagnose issues
    */
-  async testConnection(): Promise<boolean> {
-    try {
-      const response = await this.makeRequest(
-        `${this.config.baseURL}/api/tags`,
-        { method: "GET" },
-      );
-
-      this.isConnected = response.ok;
-      this.lastConnectionCheck = Date.now();
-
-      return this.isConnected;
-    } catch (error) {
-      console.error("Connection test failed:", error);
-      this.isConnected = false;
-      this.lastConnectionCheck = Date.now();
-      return false;
-    }
-  }
-
-  /**
-   * Get available models with better error handling
-   */
-  async getAvailableModels(): Promise<string[]> {
-    try {
-      const response = await this.makeRequest(
-        `${this.config.baseURL}/api/tags`,
-        { method: "GET" },
-      );
-
-      if (!response.ok) {
-        return [];
-      }
-
-      const data: OllamaTagsResponse = await response.json();
-      return data.models?.map((model) => model.name) || [];
-    } catch (error) {
-      console.error("Error fetching available models:", error);
-      return [];
-    }
-  }
-
-  /**
-   * Get model information
-   */
-  async getModelInfo(modelName?: string): Promise<OllamaModel | null> {
-    try {
-      const models = await this.getAvailableModels();
-      const targetModel = modelName || this.config.model;
-
-      if (!models.includes(targetModel)) {
-        return null;
-      }
-
-      const response = await this.makeRequest(
-        `${this.config.baseURL}/api/tags`,
-        { method: "GET" },
-      );
-
-      if (!response.ok) {
-        return null;
-      }
-
-      const data: OllamaTagsResponse = await response.json();
-      return data.models.find((model) => model.name === targetModel) || null;
-    } catch (error) {
-      console.error("Error fetching model info:", error);
-      return null;
-    }
-  }
-
-  /**
-   * Check if a specific model is available
-   */
-  async isModelAvailable(modelName?: string): Promise<boolean> {
-    const models = await this.getAvailableModels();
-    const targetModel = modelName || this.config.model;
-    return models.includes(targetModel);
-  }
-
-  /**
-   * Get service status
-   */
-  async getStatus(): Promise<{
-    connected: boolean;
-    baseURL: string;
-    model: string;
-    modelAvailable: boolean;
-    availableModels: string[];
-  }> {
-    const connected = await this.testConnection();
-    const availableModels = connected ? await this.getAvailableModels() : [];
-    const modelAvailable = availableModels.includes(this.config.model);
-
-    return {
-      connected,
-      baseURL: this.config.baseURL,
-      model: this.config.model,
-      modelAvailable,
-      availableModels,
+  async healthCheck(): Promise<{
+    overall: "healthy" | "unhealthy" | "degraded";
+    checks: {
+      connection: boolean;
+      modelAvailable: boolean;
+      canGenerate: boolean;
     };
-  }
-
-  /**
-   * Update configuration
-   */
-  updateConfig(newConfig: Partial<LocalLLMConfig>): void {
-    this.config = { ...this.config, ...newConfig };
-    this.isConnected = false; // Force reconnection check
-  }
-
-  /**
-   * Get current configuration
-   */
-  getConfig(): LocalLLMConfig {
-    return { ...this.config };
-  }
-
-  /**
-   * Get detailed model information
-   */
-  async getModelDetails(modelName?: string): Promise<any> {
-    try {
-      const targetModel = modelName || this.config.model;
-      
-      const response = await this.makeRequest(
-        `${this.config.baseURL}/api/show`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name: targetModel }),
-        },
-      );
-
-      if (!response.ok) {
-        return null;
-      }
-
-      const data = await response.json();
-      return {
-        name: data.name || targetModel,
-        size: data.size || 'Unknown',
-        digest: data.digest || 'Unknown',
-        modified: data.modified_at || 'Unknown',
-        template: data.template || 'Unknown',
-        parameters: data.parameters || {},
-        modelfile: data.modelfile || 'Unknown'
-      };
-    } catch (error) {
-      console.error(`Error fetching model details for ${modelName}:`, error);
-      return null;
-    }
-  }
-
-  /**
-   * Validate that Llama 3.1 8B is available and working
-   */
-  async validateLlamaModel(): Promise<{
-    success: boolean;
-    message: string;
-    details?: any;
+    details: any;
   }> {
+    console.log(`[LocalLLM] Starting health check...`);
+
+    const checks = {
+      connection: false,
+      modelAvailable: false,
+      canGenerate: false,
+    };
+
+    let details: any = {};
+
     try {
-      // Check if llama3.1:8b is available
-      const availableModels = await this.getAvailableModels();
-      if (!availableModels.includes('llama3.1:8b')) {
-        return {
-          success: false,
-          message: `Llama 3.1 8B not found. Available models: ${availableModels.join(', ') || 'None'}. Please run: ollama pull llama3.1:8b`
-        };
+      // Test connection
+      checks.connection = await this.testConnection();
+      if (!checks.connection) {
+        details.connectionError = "Failed to connect to Ollama service";
       }
 
-      // Test the model with a simple request
-      try {
-        const testResponse = await this.generateResponse("Hello", {
-          temperature: 0.1,
-          maxTokens: 10
-        });
-        
-        if (!testResponse) {
-          return {
-            success: false,
-            message: `Llama 3.1 8B is available but not responding properly. Check your Ollama service.`
-          };
+      // Check if model is available
+      if (checks.connection) {
+        checks.modelAvailable = await this.isModelAvailable();
+        if (!checks.modelAvailable) {
+          const availableModels = await this.getAvailableModels();
+          details.modelError = `Model "${this.config.model}" not available. Available: ${availableModels.join(", ")}`;
         }
-
-        // Get model details
-        const modelDetails = await this.getModelDetails('llama3.1:8b');
-
-        return {
-          success: true,
-          message: `Llama 3.1 8B is working properly`,
-          details: modelDetails
-        };
-      } catch (testError) {
-        return {
-          success: false,
-          message: `Llama 3.1 8B failed test: ${testError.message}`
-        };
       }
+
+      // Test generation
+      if (checks.connection && checks.modelAvailable) {
+        try {
+          const testResponse = await this.generateResponse("Test", {
+            maxTokens: 10,
+          });
+          checks.canGenerate = testResponse && testResponse.trim().length > 0;
+          details.testResponse = testResponse;
+        } catch (genError) {
+          details.generationError = genError.message;
+        }
+      }
+
+      let overall: "healthy" | "unhealthy" | "degraded" = "unhealthy";
+      if (checks.connection && checks.modelAvailable && checks.canGenerate) {
+        overall = "healthy";
+      } else if (checks.connection && checks.modelAvailable) {
+        overall = "degraded";
+      }
+
+      console.log(`[LocalLLM] Health check completed:`, { overall, checks });
+
+      return { overall, checks, details };
     } catch (error) {
+      console.error(`[LocalLLM] Health check failed:`, error);
       return {
-        success: false,
-        message: `Error validating Llama 3.1 8B: ${error.message}`
+        overall: "unhealthy",
+        checks,
+        details: { error: error.message },
       };
     }
   }

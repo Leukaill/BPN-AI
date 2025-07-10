@@ -530,15 +530,15 @@ Your file has been generated and is ready for download. The download link will e
       const bpnKnowledge = await storage.getBpnKnowledge();
       console.log(`BPN knowledge entries: ${bpnKnowledge.length}`);
 
-      // Build contextual prompt
-      const contextualPrompt = this.buildContextualPrompt(prompt, relevantKnowledge, documentContext);
-      console.log(`Final context length: ${contextualPrompt.length}`);
+      // Build contextual prompt (simplified for faster responses)
+      const contextualPrompt = `You are Denyse, an M&E specialist. Answer briefly in 1-2 sentences: ${prompt}`;
+      console.log(`Simplified prompt length: ${contextualPrompt.length}`);
 
       // Generate response with enhanced error handling
       const { llmErrorHandler } = await import("./llm-error-handler");
       const rawResponse = await llmErrorHandler.generateResponse(contextualPrompt, {
         temperature: 0.7,
-        maxTokens: 256, // Much smaller for faster responses
+        maxTokens: 50, // Extremely small for testing
         topK: 40,
         topP: 0.95
       }, "chat response");
