@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Chat } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 
 interface SidebarProps {
   currentChatId: number | null;
@@ -28,6 +29,7 @@ interface SidebarProps {
 export function Sidebar({ currentChatId, onChatSelect, onNewChat }: SidebarProps) {
   const { user, logoutMutation } = useAuth();
   const [llmMode, setLlmMode] = useState<"online" | "local">("online");
+  const [, setLocation] = useLocation();
 
   const { data: chats = [] } = useQuery<Chat[]>({
     queryKey: ["/api/chats"],
@@ -177,6 +179,7 @@ export function Sidebar({ currentChatId, onChatSelect, onNewChat }: SidebarProps
         <div className="space-y-2">
           <Button
             variant="ghost"
+            onClick={() => setLocation("/settings")}
             className="w-full liquid-glass rounded-lg p-3 text-left hover:bg-white/30 transition-all duration-300 group justify-start"
           >
             <Settings className="text-bpn-turquoise mr-3" />
