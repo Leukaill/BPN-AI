@@ -550,12 +550,21 @@ class KnowledgeBaseService {
 
   async searchKnowledge(query: string, userId: number, limit: number = 10): Promise<KnowledgeBase[]> {
     try {
+      console.log(`[Knowledge Search] Query: "${query}" for user ${userId}`);
+      
       // Get all user knowledge base entries
       const userKnowledge = await storage.getUserKnowledgeBase(userId);
+      console.log(`[Knowledge Search] Found ${userKnowledge.length} total knowledge entries`);
       
       if (userKnowledge.length === 0) {
+        console.log(`[Knowledge Search] No knowledge base entries found for user ${userId}`);
         return [];
       }
+
+      // Log the available documents
+      userKnowledge.forEach(kb => {
+        console.log(`[Knowledge Search] Available document: "${kb.title}" (${kb.content.length} chars)`);
+      });
 
       // Simple text-based search first
       const scoredKnowledge = userKnowledge
@@ -584,12 +593,14 @@ class KnowledgeBaseService {
             score += 0.3;
           }
           
+          console.log(`[Knowledge Search] Document "${kb.title}" scored ${score.toFixed(2)}`);
           return { ...kb, score };
         })
         .filter(kb => kb.score > 0.1) // Filter out very low scores
         .sort((a, b) => b.score - a.score)
         .slice(0, limit);
 
+      console.log(`[Knowledge Search] Returning ${scoredKnowledge.length} scored results`);
       return scoredKnowledge;
     } catch (error) {
       console.error('Error searching knowledge base:', error);
