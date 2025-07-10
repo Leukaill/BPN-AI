@@ -153,6 +153,14 @@ Key entities include:
 
 ### Recent Changes (January 2025)
 
+### Enhanced Upload System & Security Overhaul ✅
+- **Advanced Error Handling**: Custom error classes (ValidationError, ProcessingError, AIServiceError) with detailed user feedback
+- **Rate Limiting**: API-wide (100 req/15min) and upload-specific (10 uploads/15min) protection against abuse
+- **File Security**: Directory traversal protection, UUID filename generation, malicious content detection
+- **Enhanced File Support**: Expanded to 50MB limit with support for PDF, DOCX, DOC, TXT, HTML, MD, CSV, RTF, JSON
+- **Improved User Experience**: Real-time error messages, upload progress tracking, success notifications
+- **Robust Validation**: Server-side file validation with MIME type and extension checking
+
 ### Document Processing System Upgrade ✅
 - **Advanced Chunking System**: Implemented intelligent text chunking with 1000-character chunks and 200-character overlap
 - **Vector Embeddings**: Full Google Gemini integration for semantic search using cosine similarity
@@ -161,9 +169,10 @@ Key entities include:
 - **Enhanced File Support**: Improved PDF, DOCX, DOC, and TXT processing with dynamic imports
 
 ### Core Workflow Implementation ✅
-1. **Upload → Extract text** (pdf-parse, mammoth libraries)
-2. **Process → Chunk + embed + store** (intelligent chunking with overlap)
-3. **Query → Find similar chunks → Generate response** (vector similarity search)
+1. **Upload → Validate & Secure** (enhanced security with rate limiting and malicious content detection)
+2. **Extract → Process text** (pdf-parse, mammoth libraries with fallback mechanisms)
+3. **Chunk → Embed → Store** (intelligent chunking with overlap and vector embeddings)
+4. **Query → Search → Generate** (vector similarity search with contextual AI responses)
 
 ### Future Enhancements
 - **Microsoft Graph Integration** - SharePoint and OneDrive support

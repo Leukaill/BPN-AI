@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Message } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface ChatAreaProps {
   currentChatId: number | null;
@@ -32,6 +33,7 @@ interface ChatAreaProps {
 
 export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [message, setMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -111,6 +113,12 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
       formData.append("file", file);
       
       const response = await apiRequest("POST", "/api/documents", formData);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || errorData.error || "Upload failed");
+      }
+      
       const document = await response.json();
       
       // Store the uploaded file and document for later use
@@ -120,8 +128,35 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
       // Add file info to the message input
       setMessage(`[📄 ${document.originalName} uploaded] `);
       
-    } catch (error) {
+      // Show success notification
+      toast({
+        title: "Upload successful",
+        description: `${file.name} has been uploaded and processed`,
+      });
+      
+    } catch (error: any) {
       console.error("File upload failed:", error);
+      
+      // Enhanced error handling for different error types
+      let errorMessage = "Failed to upload file";
+      
+      if (error.message?.includes("rate limit") || error.message?.includes("Too many")) {
+        errorMessage = "Upload rate limit exceeded. Please wait a moment and try again.";
+      } else if (error.message?.includes("File Too Large")) {
+        errorMessage = "File is too large. Please select a file smaller than 50MB.";
+      } else if (error.message?.includes("Invalid file")) {
+        errorMessage = "Invalid file type or format. Please check file requirements.";
+      } else if (error.message?.includes("malicious")) {
+        errorMessage = "File contains potentially unsafe content and cannot be uploaded.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast({
+        title: "Upload failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setIsUploading(false);
     }

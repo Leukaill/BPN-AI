@@ -17,27 +17,36 @@ export function FileUpload({ onFileUpload, disabled }: FileUploadProps) {
     if (!files || files.length === 0) return;
 
     const file = files[0];
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    const maxSize = 50 * 1024 * 1024; // 50MB to match server limits
     const allowedTypes = [
       'application/pdf',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'application/msword',
-      'text/plain'
+      'text/plain',
+      'text/html',
+      'text/markdown',
+      'text/csv',
+      'application/rtf',
+      'application/json'
     ];
 
     if (file.size > maxSize) {
       toast({
         title: "File too large",
-        description: "Please select a file smaller than 10MB",
+        description: "Please select a file smaller than 50MB",
         variant: "destructive",
       });
       return;
     }
 
-    if (!allowedTypes.includes(file.type)) {
+    // Check file extension as fallback for better compatibility
+    const allowedExtensions = ['.pdf', '.docx', '.doc', '.txt', '.html', '.md', '.csv', '.rtf', '.json'];
+    const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+    
+    if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
       toast({
         title: "Invalid file type",
-        description: "Please select a PDF, DOCX, DOC, or TXT file",
+        description: "Allowed types: PDF, DOCX, DOC, TXT, HTML, MD, CSV, RTF, JSON",
         variant: "destructive",
       });
       return;
@@ -71,7 +80,7 @@ export function FileUpload({ onFileUpload, disabled }: FileUploadProps) {
       <input
         ref={fileInputRef}
         type="file"
-        accept=".pdf,.docx,.doc,.txt"
+        accept=".pdf,.docx,.doc,.txt,.html,.md,.csv,.rtf,.json"
         onChange={(e) => handleFileSelect(e.target.files)}
         className="hidden"
         disabled={disabled}

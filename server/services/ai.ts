@@ -3,6 +3,14 @@ import { geminiService } from "./gemini";
 import { documentProcessor } from "./document-processor";
 import { knowledgeBaseService } from "./knowledge-base";
 
+// Custom error classes to match routes.ts
+class AIServiceError extends Error {
+  constructor(message: string, public originalError?: Error) {
+    super(message);
+    this.name = "AIServiceError";
+  }
+}
+
 interface AIResponse {
   content: string;
   sources?: string[];
@@ -77,7 +85,7 @@ class AIService {
       return allDocs;
     } catch (error) {
       console.error("Knowledge search error:", error);
-      return [];
+      throw new AIServiceError("Failed to search knowledge base", error as Error);
     }
   }
 

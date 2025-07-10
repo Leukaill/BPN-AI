@@ -4,6 +4,21 @@ import fs from "fs";
 import path from "path";
 import { geminiService } from "./gemini";
 
+// Custom error classes to match routes.ts
+class ValidationError extends Error {
+  constructor(message: string, public details?: any) {
+    super(message);
+    this.name = "ValidationError";
+  }
+}
+
+class ProcessingError extends Error {
+  constructor(message: string, public originalError?: Error) {
+    super(message);
+    this.name = "ProcessingError";
+  }
+}
+
 // Document processing libraries - loaded dynamically
 let pdfParse: any;
 let mammoth: any;
@@ -185,22 +200,28 @@ class KnowledgeBaseService {
 
   private validateFile(file: Express.Multer.File): void {
     if (!file) {
-      throw new Error("No file provided");
+      throw new ValidationError("No file provided");
     }
 
     if (!file.path || !fs.existsSync(file.path)) {
-      throw new Error("File path does not exist");
+      throw new ValidationError("File path does not exist");
     }
 
     const stats = fs.statSync(file.path);
     if (stats.size === 0) {
-      throw new Error("File is empty");
+      throw new ValidationError("File is empty");
     }
 
     // Check file size (limit to 50MB)
     const maxSize = 50 * 1024 * 1024;
     if (stats.size > maxSize) {
-      throw new Error("File size exceeds 50MB limit");
+      throw new ValidationError("File size exceeds 50MB limit");
+    }
+
+    // Additional security check for file content
+    const buffer = fs.readFileSync(file.path, { encoding: null });
+    if (this.containsMaliciousContent(buffer)) {
+      throw new ValidationError("File contains potentially malicious content");
     }
 
     console.log(
@@ -549,6 +570,22 @@ class KnowledgeBaseService {
     return textExtensions.includes(ext);
   }
 
+  private containsMaliciousContent(buffer: Buffer): boolean {
+    // Basic security checks for malicious file content
+    const content = buffer.toString('binary');
+    
+    // Check for script injection patterns
+    const scriptPatterns = [
+      /<script[^>]*>/i,
+      /javascript:/i,
+      /vbscript:/i,
+      /onload=/i,
+      /onerror=/i,
+    ];
+    
+    return scriptPatterns.some(pattern => pattern.test(content));
+  }
+
   private sanitizeText(text: string): string {
     if (!text) return "";
     
@@ -557,12 +594,12 @@ class KnowledgeBaseService {
     const binaryRatio = binaryCharCount / text.length;
     
     if (binaryRatio > 0.2) {
-      throw new Error('Text contains too much binary/corrupted data');
+      throw new ValidationError('Text contains too much binary/corrupted data');
     }
     
     // Check for PDF internal structure indicators
     if (text.includes('%PDF-') || (text.includes('obj') && text.includes('endobj'))) {
-      throw new Error('Text appears to be raw PDF structure data, not readable content');
+      throw new ValidationError('Text appears to be raw PDF structure data, not readable content');
     }
     
     // Remove null bytes and other problematic characters
@@ -707,11 +744,15 @@ class KnowledgeBaseService {
     const knowledge = userKnowledge.find(kb => kb.id === knowledgeId);
     
     if (!knowledge) {
-      throw new Error('Knowledge base entry not found or access denied');
+      throw new ValidationError('Knowledge base entry not found or access denied');
     }
     
-    await storage.deleteKnowledgeBase(knowledgeId);
-    console.log(`Deleted knowledge base entry ${knowledgeId}`);
+    try {
+      await storage.deleteKnowledgeBase(knowledgeId);
+      console.log(`✓ Deleted knowledge base entry ${knowledgeId}`);
+    } catch (error) {
+      throw new ProcessingError('Failed to delete knowledge base entry', error as Error);
+    }
   }
 
   async getUserKnowledgeStats(userId: number): Promise<{
