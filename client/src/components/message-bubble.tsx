@@ -4,6 +4,78 @@ import { Button } from "./ui/button";
 import { User, Bot, FileText, Check, ExternalLink } from "lucide-react";
 import { Message } from "@shared/schema";
 
+interface FormattedMessageProps {
+  content: string;
+  isUser: boolean;
+}
+
+function FormattedMessage({ content, isUser }: FormattedMessageProps) {
+  const formatText = (text: string) => {
+    // Clean up the text and split into lines
+    const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+    
+    return lines.map((line, index) => {
+      // Check different types of content
+      const isMainHeader = /^[A-Z\s]{5,}:?$/.test(line) || /^#{1,3}\s/.test(line);
+      const isSubheading = line.endsWith(':') && line.length < 60 && !line.includes('?');
+      const isNumberedSection = /^\d+\.\s*[A-Z]/.test(line);
+      const isListItem = /^[-•*]\s/.test(line) || /^\d+\.\s/.test(line);
+      const isBulletPoint = /^[-•*]\s/.test(line);
+      const isKeyValue = line.includes(':') && !line.endsWith(':') && line.length < 100;
+      
+      // Determine styling and spacing
+      let className = '';
+      let content = line;
+      
+      if (isMainHeader) {
+        className = 'font-bold text-lg text-blue-600 dark:text-blue-400 mb-3 pb-2 border-b border-gray-200 dark:border-gray-700';
+      } else if (isNumberedSection) {
+        className = 'font-semibold text-base mb-2 mt-4';
+      } else if (isSubheading) {
+        className = 'font-semibold text-gray-800 dark:text-gray-200 mb-2 mt-3';
+      } else if (isBulletPoint) {
+        className = 'ml-4 mb-2 flex items-start space-x-2';
+        content = line.replace(/^[-•*]\s*/, '');
+      } else if (isListItem && !isBulletPoint) {
+        className = 'ml-4 mb-2 flex items-start space-x-2';
+        content = line.replace(/^\d+\.\s*/, '');
+      } else if (isKeyValue) {
+        className = 'mb-2 leading-relaxed';
+        const [key, ...valueParts] = line.split(':');
+        content = `${key.trim()}:`;
+        const value = valueParts.join(':').trim();
+        return (
+          <div key={index} className={className}>
+            <span className="font-medium">{content}</span>
+            {value && <span className="ml-2 text-gray-700 dark:text-gray-300">{value}</span>}
+          </div>
+        );
+      } else {
+        className = 'mb-3 leading-relaxed text-gray-800 dark:text-gray-200';
+      }
+      
+      return (
+        <div key={index} className={className}>
+          {(isBulletPoint || (isListItem && !isBulletPoint)) ? (
+            <>
+              <span className={`font-bold mt-1 ${isUser ? 'text-white/80' : 'text-blue-500 dark:text-blue-400'}`}>•</span>
+              <span className="flex-1">{content}</span>
+            </>
+          ) : (
+            content
+          )}
+        </div>
+      );
+    });
+  };
+
+  return (
+    <div className="space-y-1">
+      {formatText(content)}
+    </div>
+  );
+}
+
 interface MessageBubbleProps {
   message: Message;
 }
@@ -22,8 +94,8 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   };
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div className={`max-w-xs lg:max-w-2xl ${isUser ? 'order-2' : 'order-1'}`}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-6`}>
+      <div className={`max-w-xs lg:max-w-3xl ${isUser ? 'order-2' : 'order-1'}`}>
         <div className="flex items-start space-x-3 mb-2">
           {!isUser && (
             <div className="w-8 h-8 bg-bpn-turquoise rounded-full flex items-center justify-center flex-shrink-0">
@@ -48,13 +120,13 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         </div>
 
         <LiquidGlass
-          className={`p-4 rounded-lg ${
+          className={`p-6 rounded-xl shadow-lg ${
             isUser 
               ? "bg-bpn-turquoise/90 text-white ml-12" 
               : "bg-white/95 dark:bg-gray-800/95 text-gray-900 dark:text-white mr-12"
           }`}
         >
-          <div className="space-y-3">
+          <div className="space-y-4">
             {hasAttachments && (
               <div className="flex items-center space-x-2">
                 <FileText className={`w-4 h-4 ${isUser ? "text-white/70" : "text-gray-600 dark:text-gray-300"}`} />
@@ -65,9 +137,9 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             )}
             
             <div className="prose prose-sm max-w-none">
-              <p className={`text-sm whitespace-pre-wrap font-medium ${isUser ? "text-white" : "text-gray-900 dark:text-white"}`}>
-                {message.content}
-              </p>
+              <div className={`text-sm leading-relaxed ${isUser ? "text-white" : "text-gray-900 dark:text-white"}`}>
+                <FormattedMessage content={message.content} isUser={isUser} />
+              </div>
             </div>
 
             {!isUser && (

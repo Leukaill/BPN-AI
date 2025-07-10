@@ -285,7 +285,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                 </div>
               </div>
             ) : (
-              <div className="max-w-4xl mx-auto space-y-6">
+              <div className="max-w-4xl mx-auto space-y-8">
                 {messages.map((message) => (
                   <MessageBubble key={message.id} message={message} />
                 ))}
