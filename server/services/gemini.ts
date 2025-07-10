@@ -4,8 +4,9 @@ class GeminiService {
   private ai: GoogleGenAI;
 
   constructor() {
+    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY || "AIzaSyB0CacGvYmIJUT_xZ_k2BIlkSvjucY__Xs";
     this.ai = new GoogleGenAI({ 
-      apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY || "" 
+      apiKey: apiKey
     });
   }
 
