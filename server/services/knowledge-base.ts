@@ -11,10 +11,16 @@ let mammoth: any;
 // Dynamic imports for document processing libraries
 async function loadDocumentLibraries() {
   try {
-    pdfParse = await import('pdf-parse');
-    mammoth = await import('mammoth');
+    const pdfParseModule = await import('pdf-parse');
+    const mammothModule = await import('mammoth');
+    
+    // Handle both CommonJS and ES module exports
+    pdfParse = pdfParseModule.default || pdfParseModule;
+    mammoth = mammothModule.default || mammothModule;
+    
+    console.log('Document processing libraries loaded successfully');
   } catch (error) {
-    console.warn('Document processing libraries not available, falling back to text files only');
+    console.warn('Document processing libraries not available, falling back to text files only:', error.message);
   }
 }
 
@@ -106,7 +112,7 @@ class KnowledgeBaseService {
     }
     
     const dataBuffer = fs.readFileSync(filePath);
-    const data = await pdfParse.default(dataBuffer);
+    const data = await pdfParse(dataBuffer);
     return data.text;
   }
 
