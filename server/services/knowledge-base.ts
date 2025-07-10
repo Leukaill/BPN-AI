@@ -4,25 +4,9 @@ import fs from "fs";
 import path from "path";
 import { geminiService } from "./gemini";
 
-// Import document processing libraries
+// Document processing libraries - loaded dynamically
 let pdfParse: any;
 let mammoth: any;
-
-// Dynamic imports for document processing libraries
-async function loadDocumentLibraries() {
-  try {
-    const pdfParseModule = await import('pdf-parse');
-    const mammothModule = await import('mammoth');
-    
-    // Handle both CommonJS and ES module exports
-    pdfParse = pdfParseModule.default || pdfParseModule;
-    mammoth = mammothModule.default || mammothModule;
-    
-    console.log('Document processing libraries loaded successfully');
-  } catch (error) {
-    console.warn('Document processing libraries not available, falling back to text files only:', error.message);
-  }
-}
 
 interface ProcessedKnowledge {
   title: string;
@@ -36,7 +20,18 @@ class KnowledgeBaseService {
 
   async initialize() {
     if (!this.initialized) {
-      await loadDocumentLibraries();
+      try {
+        // Load libraries when first needed
+        const pdfParseModule = await import('pdf-parse');
+        const mammothModule = await import('mammoth');
+        
+        pdfParse = pdfParseModule.default;
+        mammoth = mammothModule.default;
+        
+        console.log('Document processing libraries loaded successfully');
+      } catch (error) {
+        console.warn('Could not load document processing libraries:', error.message);
+      }
       this.initialized = true;
     }
   }
