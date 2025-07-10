@@ -259,21 +259,26 @@ class KnowledgeBaseService {
     originalName: string,
   ): Promise<ExtractionResult> {
     const fallbackMethods = [
-      // Try as plain text
-      () => this.extractPlainText(filePath),
+      // Try PDF parsing again with different options for PDFs
+      () => this.extractPdfTextWithFallback(filePath),
       // Try textract if available
       () => this.extractWithTextract(filePath),
-      // Try reading with different encodings
-      () => this.extractWithDifferentEncodings(filePath),
-      // Try binary text extraction
-      () => this.extractBinaryText(filePath),
+      // Try reading with different encodings (avoid for PDFs)
+      () => this.isLikelyPdf(originalName) ? Promise.resolve({ text: "", success: false, method: "skip", error: "Skipping text extraction for PDF" }) : this.extractWithDifferentEncodings(filePath),
+      // Try as plain text (avoid for PDFs)
+      () => this.isLikelyPdf(originalName) ? Promise.resolve({ text: "", success: false, method: "skip", error: "Skipping plain text for PDF" }) : this.extractPlainText(filePath),
     ];
 
     for (const method of fallbackMethods) {
       try {
         const result = await method();
         if (result.success && result.text.trim().length > 0) {
-          return result;
+          // Validate that we got actual text content, not binary data
+          if (this.isValidTextContent(result.text)) {
+            return result;
+          } else {
+            console.log(`Fallback method returned binary data, skipping`);
+          }
         }
       } catch (error) {
         console.log(`Fallback method failed: ${error.message}`);
@@ -285,26 +290,102 @@ class KnowledgeBaseService {
       text: "",
       success: false,
       method: "all_fallbacks",
-      error: "All extraction methods failed",
+      error: "All extraction methods failed to extract readable text",
     };
   }
 
-  private async extractPdfText(filePath: string): Promise<ExtractionResult> {
-    if (!pdfParse) {
+  private isLikelyPdf(filename: string): boolean {
+    return filename.toLowerCase().endsWith('.pdf');
+  }
+
+  private isValidTextContent(text: string): boolean {
+    // Check if text contains mostly readable characters
+    const readableChars = text.replace(/[\s\n\r\t]/g, '').length;
+    const totalChars = text.length;
+    const printableChars = text.replace(/[^\x20-\x7E\s]/g, '').length;
+    
+    // If more than 70% of characters are printable, consider it valid text
+    return printableChars / totalChars > 0.7 && readableChars > 50;
+  }
+
+  private async extractPdfTextWithFallback(filePath: string): Promise<ExtractionResult> {
+    try {
+      // Try with different PDF parsing options
+      if (!pdfParse) {
+        const pdfModule = await import("pdf-parse");
+        pdfParse = pdfModule.default;
+      }
+
+      const dataBuffer = fs.readFileSync(filePath);
+      
+      // Try with different parsing options
+      const parseOptions = [
+        { max: 0, normalizeWhitespace: true, disableCombineTextItems: false },
+        { max: 0, normalizeWhitespace: false, disableCombineTextItems: true },
+        { max: 10, normalizeWhitespace: true }, // Limit to first 10 pages
+      ];
+
+      for (const options of parseOptions) {
+        try {
+          const data = await pdfParse(dataBuffer, options);
+          if (data.text && data.text.trim().length > 0 && this.isValidTextContent(data.text)) {
+            return {
+              text: data.text,
+              success: true,
+              method: "pdf-parse-fallback",
+            };
+          }
+        } catch (error) {
+          console.log(`PDF parse option failed: ${error.message}`);
+          continue;
+        }
+      }
+
       return {
         text: "",
         success: false,
-        method: "pdf",
-        error: "PDF parsing library not available",
+        method: "pdf-fallback",
+        error: "PDF parsing with all options failed",
+      };
+    } catch (error) {
+      return {
+        text: "",
+        success: false,
+        method: "pdf-fallback",
+        error: error.message,
       };
     }
+  }
 
+  private async extractPdfText(filePath: string): Promise<ExtractionResult> {
     try {
+      // Try to load pdf-parse dynamically if not loaded
+      if (!pdfParse) {
+        console.log("Loading pdf-parse library...");
+        const pdfModule = await import("pdf-parse");
+        pdfParse = pdfModule.default;
+        console.log("✓ pdf-parse loaded successfully");
+      }
+
       const dataBuffer = fs.readFileSync(filePath);
+      console.log(`Processing PDF file: ${filePath} (${dataBuffer.length} bytes)`);
+      
       const data = await pdfParse(dataBuffer, {
         max: 0, // Parse all pages
-        version: 'v1.10.100'
+        normalizeWhitespace: true,
+        disableCombineTextItems: false
       });
+      
+      console.log(`✓ PDF parsed successfully: ${data.numpages} pages, ${data.text.length} characters`);
+      
+      if (!data.text || data.text.trim().length === 0) {
+        return {
+          text: "",
+          success: false,
+          method: "pdf-parse",
+          error: "PDF contains no readable text content",
+        };
+      }
       
       return {
         text: data.text,
@@ -312,11 +393,12 @@ class KnowledgeBaseService {
         method: "pdf-parse",
       };
     } catch (error) {
+      console.error("PDF parsing failed:", error);
       return {
         text: "",
         success: false,
         method: "pdf",
-        error: error.message,
+        error: `PDF parsing failed: ${error.message}`,
       };
     }
   }
