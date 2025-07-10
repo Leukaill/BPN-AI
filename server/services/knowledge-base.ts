@@ -66,8 +66,10 @@ class KnowledgeBaseService {
 
       const knowledgeBase = await storage.createKnowledgeBase(knowledgeData);
       
-      // Generate embedding for semantic search
-      this.generateEmbeddingAsync(knowledgeBase.id, extractedText);
+      // Generate embedding for semantic search in background
+      this.generateEmbeddingAsync(knowledgeBase.id, extractedText).catch(error => {
+        console.warn(`Failed to generate embedding for ${knowledgeBase.id}:`, error.message);
+      });
       
       console.log(`Knowledge base entry created: ${title}`);
       return knowledgeBase;
@@ -147,12 +149,19 @@ class KnowledgeBaseService {
 
   private async generateEmbeddingAsync(knowledgeId: number, text: string): Promise<void> {
     try {
-      // Generate embedding in background
-      const embedding = await geminiService.generateEmbedding(text.slice(0, 2000)); // Limit text for embedding
+      // Generate embedding in background with timeout
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Embedding generation timeout')), 30000); // 30 second timeout
+      });
+      
+      const embeddingPromise = geminiService.generateEmbedding(text.slice(0, 2000)); // Limit text for embedding
+      
+      const embedding = await Promise.race([embeddingPromise, timeoutPromise]) as number[];
       await storage.updateKnowledgeBaseEmbedding(knowledgeId, JSON.stringify(embedding));
       console.log(`Generated embedding for knowledge base entry ${knowledgeId}`);
     } catch (error) {
       console.warn(`Failed to generate embedding for knowledge base entry ${knowledgeId}:`, error.message);
+      // Don't throw - this is background processing
     }
   }
 
@@ -165,30 +174,31 @@ class KnowledgeBaseService {
         return [];
       }
 
-      // If we have embeddings, use semantic search
-      const queryEmbedding = await geminiService.generateEmbedding(query);
-      
-      // Calculate similarity scores
+      // Simple text-based search first
       const scoredKnowledge = userKnowledge
         .map(kb => {
           let score = 0;
           
-          // Text-based search (fallback)
+          // Text-based search
           const contentLower = kb.content.toLowerCase();
           const queryLower = query.toLowerCase();
+          
+          // Exact phrase match gets highest score
           if (contentLower.includes(queryLower)) {
-            score += 0.5;
+            score += 0.8;
           }
           
-          // Embedding-based search
-          if (kb.embedding && queryEmbedding) {
-            try {
-              const kbEmbedding = JSON.parse(kb.embedding);
-              const similarity = this.cosineSimilarity(queryEmbedding, kbEmbedding);
-              score += similarity * 0.8; // Weight embedding similarity higher
-            } catch (error) {
-              // Skip embedding comparison if parsing fails
+          // Individual word matches
+          const queryWords = queryLower.split(/\s+/);
+          queryWords.forEach(word => {
+            if (contentLower.includes(word)) {
+              score += 0.2 / queryWords.length;
             }
+          });
+          
+          // Title matches get bonus
+          if (kb.title.toLowerCase().includes(queryLower)) {
+            score += 0.3;
           }
           
           return { ...kb, score };
