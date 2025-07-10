@@ -167,11 +167,15 @@ FORMATTING REQUIREMENTS:
 - NEVER use asterisks (*) for emphasis or formatting
 - Use clean, readable text without markdown asterisks
 - For emphasis, use CAPITAL LETTERS or rephrase for natural emphasis
-- Use line breaks and paragraphs for better readability
+- Use proper paragraph structure with double line breaks between paragraphs
 - When listing items, use numbers (1., 2., 3.) or simple dashes (-)
 - Keep text formatting simple and clean
 - Avoid any markdown-style formatting like *text*, **text**, or ***text***
 - Write in a natural, flowing style that's easy to read
+- Separate different topics or sections with blank lines
+- Use proper paragraph breaks to improve readability
+- Each paragraph should contain 2-4 sentences maximum
+- Group related information together in logical paragraphs
 
 `;
 
@@ -360,11 +364,15 @@ FORMATTING REQUIREMENTS:
 - NEVER use asterisks (*) for emphasis or formatting
 - Use clean, readable text without markdown asterisks
 - For emphasis, use CAPITAL LETTERS or rephrase for natural emphasis
-- Use line breaks and paragraphs for better readability
+- Use proper paragraph structure with double line breaks between paragraphs
 - When listing items, use numbers (1., 2., 3.) or simple dashes (-)
 - Keep text formatting simple and clean
 - Avoid any markdown-style formatting like *text*, **text**, or ***text***
 - Write in a natural, flowing style that's easy to read
+- Separate different topics or sections with blank lines
+- Use proper paragraph breaks to improve readability
+- Each paragraph should contain 2-4 sentences maximum
+- Group related information together in logical paragraphs
 
 DOCUMENTS TO ANALYZE:
 `;

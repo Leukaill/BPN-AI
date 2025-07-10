@@ -11,66 +11,81 @@ interface FormattedMessageProps {
 
 function FormattedMessage({ content, isUser }: FormattedMessageProps) {
   const formatText = (text: string) => {
-    // Clean up the text and split into lines
-    const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+    // First, let's handle proper paragraphs by splitting on double newlines
+    const sections = text.split('\n\n').filter(section => section.trim());
     
-    return lines.map((line, index) => {
-      // Check different types of content
-      const isMainHeader = /^[A-Z\s]{5,}:?$/.test(line) || /^#{1,3}\s/.test(line);
-      const isSubheading = line.endsWith(':') && line.length < 60 && !line.includes('?');
-      const isNumberedSection = /^\d+\.\s*[A-Z]/.test(line);
-      const isListItem = /^[-•*]\s/.test(line) || /^\d+\.\s/.test(line);
-      const isBulletPoint = /^[-•*]\s/.test(line);
-      const isKeyValue = line.includes(':') && !line.endsWith(':') && line.length < 100;
+    return sections.map((section, sectionIndex) => {
+      const lines = section.split('\n').map(line => line.trim()).filter(line => line);
       
-      // Determine styling and spacing
-      let className = '';
-      let content = line;
+      // Check if this whole section is a list
+      const isListSection = lines.every(line => /^[-•*]\s/.test(line) || /^\d+\.\s/.test(line));
       
-      if (isMainHeader) {
-        className = 'font-bold text-lg text-blue-600 dark:text-blue-400 mb-3 pb-2 border-b border-gray-200 dark:border-gray-700';
-      } else if (isNumberedSection) {
-        className = 'font-semibold text-base mb-2 mt-4';
-      } else if (isSubheading) {
-        className = 'font-semibold text-gray-800 dark:text-gray-200 mb-2 mt-3';
-      } else if (isBulletPoint) {
-        className = 'ml-4 mb-2 flex items-start space-x-2';
-        content = line.replace(/^[-•*]\s*/, '');
-      } else if (isListItem && !isBulletPoint) {
-        className = 'ml-4 mb-2 flex items-start space-x-2';
-        content = line.replace(/^\d+\.\s*/, '');
-      } else if (isKeyValue) {
-        className = 'mb-2 leading-relaxed';
-        const [key, ...valueParts] = line.split(':');
-        content = `${key.trim()}:`;
-        const value = valueParts.join(':').trim();
+      if (isListSection) {
+        // Handle as a list block
         return (
-          <div key={index} className={className}>
-            <span className="font-medium">{content}</span>
-            {value && <span className="ml-2 text-gray-700 dark:text-gray-300">{value}</span>}
+          <div key={sectionIndex} className="mb-4">
+            {lines.map((line, lineIndex) => {
+              const content = line.replace(/^[-•*]\s*/, '').replace(/^\d+\.\s*/, '');
+              return (
+                <div key={lineIndex} className="ml-4 mb-2 flex items-start space-x-2">
+                  <span className={`font-bold mt-1 ${isUser ? 'text-white/80' : 'text-blue-500 dark:text-blue-400'}`}>•</span>
+                  <span className="flex-1 leading-relaxed">{content}</span>
+                </div>
+              );
+            })}
           </div>
         );
-      } else {
-        className = 'mb-3 leading-relaxed text-gray-800 dark:text-gray-200';
       }
       
+      // Handle as regular content with proper paragraph structure
       return (
-        <div key={index} className={className}>
-          {(isBulletPoint || (isListItem && !isBulletPoint)) ? (
-            <>
-              <span className={`font-bold mt-1 ${isUser ? 'text-white/80' : 'text-blue-500 dark:text-blue-400'}`}>•</span>
-              <span className="flex-1">{content}</span>
-            </>
-          ) : (
-            content
-          )}
+        <div key={sectionIndex} className="mb-5">
+          {lines.map((line, lineIndex) => {
+            // Check different types of content
+            const isMainHeader = /^[A-Z\s]{5,}:?$/.test(line) || /^#{1,3}\s/.test(line);
+            const isSubheading = line.endsWith(':') && line.length < 60 && !line.includes('?');
+            const isNumberedSection = /^\d+\.\s*[A-Z]/.test(line);
+            const isKeyValue = line.includes(':') && !line.endsWith(':') && line.length < 100;
+            
+            // Determine styling and spacing
+            let className = '';
+            let content = line;
+            
+            if (isMainHeader) {
+              className = 'font-bold text-lg text-blue-600 dark:text-blue-400 mb-3 pb-2 border-b border-gray-200 dark:border-gray-700';
+            } else if (isNumberedSection) {
+              className = 'font-semibold text-base mb-3 mt-4';
+            } else if (isSubheading) {
+              className = 'font-semibold text-gray-800 dark:text-gray-200 mb-2 mt-3';
+            } else if (isKeyValue) {
+              className = 'mb-3 leading-relaxed';
+              const [key, ...valueParts] = line.split(':');
+              content = `${key.trim()}:`;
+              const value = valueParts.join(':').trim();
+              return (
+                <div key={lineIndex} className={className}>
+                  <span className="font-medium">{content}</span>
+                  {value && <span className="ml-2 text-gray-700 dark:text-gray-300">{value}</span>}
+                </div>
+              );
+            } else {
+              // Regular paragraph text
+              className = 'mb-3 leading-relaxed text-gray-800 dark:text-gray-200';
+            }
+            
+            return (
+              <div key={lineIndex} className={className}>
+                {content}
+              </div>
+            );
+          })}
         </div>
       );
     });
   };
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       {formatText(content)}
     </div>
   );
