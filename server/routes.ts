@@ -13,7 +13,7 @@ import path from "path";
 import fs from "fs/promises";
 import { z } from "zod";
 import rateLimit from "express-rate-limit";
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "crypto";
 
 // Enhanced error handling interface
 interface ApiError extends Error {
@@ -62,7 +62,15 @@ const ensureUploadDir = async () => {
 ensureUploadDir().catch(console.error);
 
 const upload = multer({
-  dest: uploadDir,
+  storage: multer.diskStorage({
+    destination: uploadDir,
+    filename: (req, file, cb) => {
+      // Generate unique filename to prevent conflicts
+      const uniqueSuffix = randomUUID();
+      const ext = path.extname(file.originalname);
+      cb(null, `${uniqueSuffix}${ext}`);
+    },
+  }),
   limits: {
     fileSize: 50 * 1024 * 1024, // 50MB
     files: 1,
@@ -97,7 +105,7 @@ const upload = multer({
     // Validate file name to prevent directory traversal
     const safeName = path.basename(file.originalname);
     if (safeName !== file.originalname) {
-      return cb(new ValidationError("Invalid file name"));
+      return cb(new Error("Invalid file name"));
     }
 
     if (
@@ -107,17 +115,11 @@ const upload = multer({
       cb(null, true);
     } else {
       cb(
-        new ValidationError(
+        new Error(
           `Invalid file type. Allowed types: ${allowedExtensions.join(", ")}`,
         ),
       );
     }
-  },
-  filename: (req, file, cb) => {
-    // Generate unique filename to prevent conflicts
-    const uniqueSuffix = uuidv4();
-    const ext = path.extname(file.originalname);
-    cb(null, `${uniqueSuffix}${ext}`);
   },
 });
 

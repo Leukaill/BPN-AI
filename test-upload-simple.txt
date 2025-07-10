@@ -1,0 +1,10 @@
+This is a test document for upload functionality.
+It contains sample text to verify that the upload system is working correctly.
+
+Key features tested:
+- File upload through multer
+- Text extraction
+- Document processing
+- Error handling
+
+If you can see this content in the AI responses, the upload system is working properly.

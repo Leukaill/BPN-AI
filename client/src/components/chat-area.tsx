@@ -112,7 +112,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
       const formData = new FormData();
       formData.append("file", file);
       
-      const response = await apiRequest("POST", "/api/documents", formData);
+      const response = await apiRequest("POST", "/api/knowledge-base/upload", formData);
       
       if (!response.ok) {
         const errorData = await response.json();
