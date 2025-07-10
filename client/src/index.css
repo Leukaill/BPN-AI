@@ -216,12 +216,29 @@
   border: 2px solid transparent;
   background-clip: padding-box;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: hsl(var(--foreground));
 }
 
 .liquid-input:focus {
   background: rgba(255, 255, 255, 0.95);
   border-color: rgba(0, 114, 142, 0.5);
   box-shadow: 0 0 0 3px rgba(0, 114, 142, 0.1);
+}
+
+.dark .liquid-input {
+  background: rgba(0, 0, 0, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  color: hsl(var(--foreground));
+}
+
+.dark .liquid-input:focus {
+  background: rgba(0, 0, 0, 0.6);
+  border-color: rgba(0, 114, 142, 0.6);
+  box-shadow: 0 0 0 3px rgba(0, 114, 142, 0.2);
+}
+
+.dark .liquid-input::placeholder {
+  color: hsl(var(--muted-foreground));
 }
 
 .sidebar-glass {
