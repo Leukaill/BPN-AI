@@ -1,6 +1,7 @@
 import { storage } from "../storage";
 import { geminiService } from "./gemini";
 import { documentProcessor } from "./document-processor";
+import { reportGenerator } from "./report-generator";
 import { knowledgeBaseService } from "./knowledge-base";
 
 // Custom error classes to match routes.ts
@@ -154,14 +155,14 @@ CRITICAL INSTRUCTIONS:
 - Never claim you don't have access to information that is clearly provided in the context below
 
 Your personality:
-- Be natural, warm, and engaging like ChatGPT
-- Use conversational language while maintaining professionalism
-- Ask follow-up questions when helpful
-- Show enthusiasm for helping users
-- Acknowledge when you don't know something (but first check the provided context)
-- Be empathetic and understanding
-- Use examples and analogies to explain complex topics
-- Structure responses clearly with headings and bullet points when appropriate
+- Be intelligent, analytical, and strategic in your thinking
+- Focus on providing valuable insights and actionable recommendations
+- Be concise and to the point - avoid unnecessary verbosity
+- When users ask for reports, generate actual analytical reports with findings and recommendations
+- Use professional language while remaining approachable
+- Ask clarifying questions only when truly necessary
+- Demonstrate deep understanding of business processes and best practices
+- Structure responses with clear headings and organized information
 
 FORMATTING REQUIREMENTS:
 - NEVER use asterisks (*) for emphasis or formatting
@@ -228,15 +229,20 @@ FORMATTING REQUIREMENTS:
 
     context += `RESPONSE INSTRUCTIONS:
 1. ALWAYS check the knowledge base documents above before responding
-2. If the user asks about ANY document, survey, analysis, or content mentioned in the knowledge base, provide detailed information from that specific content
-3. Quote relevant sections and cite the source document title
-4. If you find relevant information in the knowledge base, structure your response around that information
-5. Use natural, conversational language as if you're discussing documents you've personally reviewed
-6. If the question can be answered using the provided context, do NOT claim you don't have access to the information
-7. When referencing data or findings, be specific and include actual numbers, percentages, or quotes when available
-8. If multiple documents are relevant, synthesize information from all relevant sources
+2. When users ask for "reports" or "analysis," generate actual analytical reports with:
+   - Executive Summary
+   - Key Findings 
+   - Recommendations
+   - Implementation Steps
+   - Success Metrics
+3. Be concise and strategic - avoid lengthy explanations unless specifically requested
+4. Focus on actionable insights and practical recommendations
+5. If asked to "generate a report" based on a document, create an analytical assessment of that document's effectiveness, gaps, and improvement opportunities
+6. Use professional report formatting with clear sections and bullet points
+7. When users request downloads, automatically offer to generate downloadable reports
+8. Synthesize information from multiple sources to provide comprehensive analysis
 
-Remember: You have access to all the document content shown above. Use it to provide comprehensive, informed responses.`;
+Remember: You are an intelligent business analyst who provides strategic insights and actionable recommendations.`;
 
     return context;
   }
@@ -275,11 +281,32 @@ Remember: You have access to all the document content shown above. Use it to pro
       promptLower.includes(keyword)
     );
 
-    if (!isDownloadRequest) {
+    const isReportRequest = /\b(report|analysis|assessment|generate.*report|create.*report)\b/i.test(originalPrompt);
+
+    if (!isDownloadRequest && !isReportRequest) {
       return response;
     }
 
     try {
+      // If it's a report request, generate an analytical report
+      if (isReportRequest && !isDownloadRequest) {
+        // Try to find relevant knowledge base documents for enhanced report
+        const relevantKnowledge = await this.searchRelevantKnowledge(originalPrompt, userId);
+        
+        if (relevantKnowledge.length > 0) {
+          const document = relevantKnowledge[0];
+          const analyticalReport = await reportGenerator.generateAnalyticalReport({
+            type: 'analysis',
+            documentContent: document.content,
+            documentTitle: document.title,
+            userId: userId,
+            customPrompt: originalPrompt
+          });
+          
+          return analyticalReport.content;
+        }
+      }
+
       // Extract filename from prompt or use default
       let filename = 'denyse_response';
       const filenameMatch = promptLower.match(/(?:save|download|export|file|document)(?:\s+(?:as|to|named?))?\s+["']?([a-zA-Z0-9\-_\s]+)["']?/);
@@ -305,21 +332,94 @@ Remember: You have access to all the document content shown above. Use it to pro
         format = 'csv';
       }
 
-      // Generate download using internal API call
-      const downloadResponse = await fetch(`http://localhost:5000/api/downloads/generate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: response,
-          filename: filename,
-          format: format
-        })
-      });
+      // Generate download using internal storage (bypass API authentication issues)
+      const { randomUUID } = await import('crypto');
+      const fs = await import('fs/promises');
+      const path = await import('path');
 
-      if (downloadResponse.ok) {
-        const downloadData = await downloadResponse.json();
+      const uniqueId = randomUUID();
+      const safeFilename = filename.replace(/[^a-zA-Z0-9\-_]/g, '_');
+      const fullFilename = `${safeFilename}_${uniqueId}.${format}`;
+      
+      // Create downloads directory if it doesn't exist
+      const uploadDir = path.join(process.cwd(), 'uploads');
+      const downloadsDir = path.join(uploadDir, 'downloads');
+      try {
+        await fs.access(downloadsDir);
+      } catch {
+        await fs.mkdir(downloadsDir, { recursive: true });
+      }
+
+      const downloadPath = path.join(downloadsDir, fullFilename);
+
+      // Process content based on format
+      let processedContent = response;
+      
+      if (format === 'html') {
+        processedContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${safeFilename}</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 40px; }
+        h1, h2, h3 { color: #00728e; }
+        .header { border-bottom: 2px solid #00728e; padding-bottom: 10px; margin-bottom: 30px; }
+        .content { max-width: 800px; }
+        .timestamp { color: #666; font-size: 0.9em; margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>${safeFilename}</h1>
+        <p class="timestamp">Generated by Denyse AI Assistant - ${new Date().toLocaleString()}</p>
+    </div>
+    <div class="content">
+        ${response.replace(/\n/g, '<br>')}
+    </div>
+</body>
+</html>`;
+      } else if (format === 'md') {
+        processedContent = `# ${safeFilename}
+
+*Generated by Denyse AI Assistant - ${new Date().toLocaleString()}*
+
+---
+
+${response}`;
+      } else if (format === 'json') {
+        processedContent = JSON.stringify({
+          title: safeFilename,
+          content: response,
+          generatedBy: "Denyse AI Assistant",
+          timestamp: new Date().toISOString(),
+          format: "json"
+        }, null, 2);
+      }
+
+      // Write file
+      await fs.writeFile(downloadPath, processedContent, 'utf8');
+
+      // Schedule file cleanup after 1 hour
+      setTimeout(async () => {
+        try {
+          await fs.unlink(downloadPath);
+        } catch (error) {
+          console.error('Error cleaning up download file:', error);
+        }
+      }, 60 * 60 * 1000); // 1 hour
+
+      const downloadData = {
+        downloadId: uniqueId,
+        filename: fullFilename,
+        format: format,
+        size: processedContent.length,
+        downloadUrl: `/api/downloads/${uniqueId}`,
+        expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString()
+      };
+
+      if (downloadData) {
         
         // Enhance the response with download link
         const enhancedResponse = `${response}
