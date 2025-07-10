@@ -61,9 +61,9 @@ class LocalLLMService {
       baseURL: process.env.LOCAL_LLM_URL || "http://localhost:11434",
       model: process.env.LOCAL_LLM_MODEL || "llama3.1:8b",
       temperature: parseFloat(process.env.LOCAL_LLM_TEMPERATURE || "0.7"),
-      maxTokens: parseInt(process.env.LOCAL_LLM_MAX_TOKENS || "512"), // Reduced for faster responses
-      timeout: parseInt(process.env.LOCAL_LLM_TIMEOUT || "120000"), // 2 minutes
-      retries: parseInt(process.env.LOCAL_LLM_RETRIES || "2"), // Reduced retries
+      maxTokens: parseInt(process.env.LOCAL_LLM_MAX_TOKENS || "256"), // Very small for testing
+      timeout: parseInt(process.env.LOCAL_LLM_TIMEOUT || "45000"), // 45 seconds
+      retries: parseInt(process.env.LOCAL_LLM_RETRIES || "1"), // Only 1 retry
     };
     console.log(`[LocalLLM] Configured with URL: ${this.config.baseURL}, Model: ${this.config.model}`);
   }
@@ -154,7 +154,7 @@ class LocalLLMService {
         stream: false,
         options: {
           temperature: options.temperature || this.config.temperature || 0.7,
-          num_predict: Math.min(options.maxTokens || this.config.maxTokens || 512, 512), // Keep responses short
+          num_predict: Math.min(options.maxTokens || this.config.maxTokens || 256, 256), // Very short responses for testing
           top_k: options.topK || 40,
           top_p: options.topP || 0.95,
           stop: options.stop || undefined,

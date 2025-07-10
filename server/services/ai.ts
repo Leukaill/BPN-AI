@@ -538,7 +538,7 @@ Your file has been generated and is ready for download. The download link will e
       const { llmErrorHandler } = await import("./llm-error-handler");
       const rawResponse = await llmErrorHandler.generateResponse(contextualPrompt, {
         temperature: 0.7,
-        maxTokens: 2048,
+        maxTokens: 256, // Much smaller for faster responses
         topK: 40,
         topP: 0.95
       }, "chat response");
