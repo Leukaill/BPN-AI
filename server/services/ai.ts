@@ -16,7 +16,7 @@ class AIService {
   async generateResponse(prompt: string, userId: number, chatId: number): Promise<string> {
     try {
       // Prepare context with ChatGPT-like personality
-      let context = `You are BPN AI Assistant, a conversational and helpful AI assistant for BPN organization. 
+      let context = `You are Denyse, a conversational and helpful AI assistant for BPN organization. 
 
 Your personality:
 - Be natural, warm, and engaging like ChatGPT

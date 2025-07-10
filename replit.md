@@ -1,8 +1,8 @@
-# BPN AI Chatbot
+# Denyse - BPN AI Assistant
 
 ## Overview
 
-This is a modern, luxurious AI chatbot application built for internal use at BPN organization. The application features a Gemini-inspired interface with BPN brand colors, document upload capabilities, and AI-powered chat functionality. It's designed to be a secure, premium chatbot that can process documents, answer questions, and help with report writing.
+This is a modern, luxurious AI chatbot application built for internal use at BPN organization. The application features a Gemini-inspired interface with BPN brand colors, document upload capabilities, and AI-powered chat functionality. Denyse is designed to be a secure, premium AI assistant that can process documents, answer questions, and help with report writing.
 
 ## User Preferences
 

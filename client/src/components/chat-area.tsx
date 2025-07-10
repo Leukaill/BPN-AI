@@ -148,7 +148,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
               <Bot className="text-white text-xl" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">BPN AI Assistant</h2>
+              <h2 className="text-xl font-bold text-foreground">Denyse</h2>
               <p className="text-sm text-foreground/70">Powered by Advanced Language Models</p>
             </div>
           </div>
@@ -182,7 +182,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     <Bot className="text-white text-3xl" />
                   </div>
                   <h2 className="text-3xl font-bold text-foreground mb-4">
-                    Meet BPN AI, your personal AI assistant
+                    Meet Denyse, your personal AI assistant
                   </h2>
                   <p className="text-foreground/70 max-w-2xl mx-auto">
                     I can help you analyze documents, extract information, generate reports, and answer questions using data from your uploaded files and BPN's knowledge base.
@@ -317,7 +317,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyDown={handleKeyPress}
-                    placeholder={uploadedDocument ? "Ask me about this document..." : "Ask me anything about your documents or BPN..."}
+                    placeholder={uploadedDocument ? "Ask Denyse about this document..." : "Ask Denyse anything about your documents or BPN..."}
                     className="liquid-input resize-none min-h-[60px] max-h-32 pr-16"
                     disabled={sendMessageMutation.isPending}
                   />
@@ -345,7 +345,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
           {/* Footer */}
           <div className="mt-4 text-center">
             <p className="text-xs text-foreground/50">
-              BPN AI can make mistakes, so double-check important information. 
+              Denyse can make mistakes, so double-check important information. 
               <a href="#" className="text-bpn-turquoise hover:underline ml-1">Privacy Policy</a> | 
               <a href="#" className="text-bpn-turquoise hover:underline ml-1">Terms of Service</a>
             </p>

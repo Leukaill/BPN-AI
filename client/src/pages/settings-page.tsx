@@ -128,7 +128,7 @@ export default function SettingsPage() {
       await uploadMutation.mutateAsync({ file });
       toast({
         title: "Knowledge Added",
-        description: `${file.name} has been successfully added to your knowledge base.`
+        description: `${file.name} has been successfully added to Denyse's knowledge base.`
       });
     } catch (error) {
       toast({
@@ -475,9 +475,9 @@ export default function SettingsPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center text-bpn-black">
                     <BookOpen className="mr-2 text-bpn-turquoise" />
-                    AI Knowledge Base
+                    Denyse's Knowledge Base
                   </CardTitle>
-                  <CardDescription>Train the AI with your own documents and knowledge</CardDescription>
+                  <CardDescription>Train Denyse with your own documents and knowledge</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Knowledge Base Stats */}
@@ -521,7 +521,7 @@ export default function SettingsPage() {
                       <div>
                         <h3 className="text-lg font-semibold text-bpn-black">Import Training Data</h3>
                         <p className="text-bpn-black/70">
-                          Upload documents to train the AI with your knowledge
+                          Upload documents to train Denyse with your knowledge
                         </p>
                       </div>
                       <div className="flex items-center justify-center space-x-4">

@@ -68,7 +68,7 @@ export function Sidebar({ currentChatId, onChatSelect, onNewChat }: SidebarProps
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-bpn-black flex items-center">
             <Brain className="text-bpn-turquoise mr-3" />
-            BPN AI
+            Denyse
           </h1>
           <div className="flex items-center space-x-2">
             {/* LLM Mode Toggle */}
