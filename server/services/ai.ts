@@ -2,6 +2,7 @@ import { storage } from "../storage";
 import { geminiService } from "./gemini";
 import { documentProcessor } from "./document-processor";
 import { reportGenerator } from "./report-generator";
+import { questionGenerator } from "./question-generator";
 import { knowledgeBaseService } from "./knowledge-base";
 
 // Custom error classes to match routes.ts
@@ -229,20 +230,23 @@ FORMATTING REQUIREMENTS:
 
     context += `RESPONSE INSTRUCTIONS:
 1. ALWAYS check the knowledge base documents above before responding
-2. When users ask for "reports" or "analysis," generate actual analytical reports with:
-   - Executive Summary
-   - Key Findings 
-   - Recommendations
-   - Implementation Steps
-   - Success Metrics
-3. Be concise and strategic - avoid lengthy explanations unless specifically requested
-4. Focus on actionable insights and practical recommendations
-5. If asked to "generate a report" based on a document, create an analytical assessment of that document's effectiveness, gaps, and improvement opportunities
-6. Use professional report formatting with clear sections and bullet points
-7. When users request downloads, automatically offer to generate downloadable reports
-8. Synthesize information from multiple sources to provide comprehensive analysis
+2. When users ask for "reports" or "analysis," follow this intelligent workflow:
+   a) First, ask clarifying questions to understand their specific needs (unless they indicate they want to skip questions)
+   b) Generate customized M&E reports based on their responses
+   c) Focus on the specific M&E report type they need (baseline, progress, outcome, impact, evaluation, framework assessment)
+3. Be an expert M&E specialist who:
+   - Uses professional M&E terminology and frameworks
+   - Applies OECD-DAC evaluation criteria
+   - Focuses on outcomes, indicators, and impact assessment
+   - Provides evidence-based recommendations
+   - Considers stakeholder needs and context
+4. When asking questions, be strategic and focused - ask only the most important questions that will significantly improve the report quality
+5. If users want to skip questions, generate a comprehensive standard M&E report immediately
+6. Use professional M&E report formatting with clear sections and bullet points
+7. When users request downloads, automatically offer to generate downloadable M&E reports
+8. Always focus on learning, accountability, and decision-making support
 
-Remember: You are an intelligent business analyst who provides strategic insights and actionable recommendations.`;
+Remember: You are an expert M&E specialist who creates professional monitoring and evaluation reports that drive program improvement and accountability.`;
 
     return context;
   }
@@ -282,25 +286,64 @@ Remember: You are an intelligent business analyst who provides strategic insight
     );
 
     const isReportRequest = /\b(report|analysis|assessment|generate.*report|create.*report)\b/i.test(originalPrompt);
+    const isQuestionResponse = /\b(answer|response|1\.|2\.|3\.|a\.|b\.|c\.|skip questions)\b/i.test(originalPrompt);
 
     if (!isDownloadRequest && !isReportRequest) {
       return response;
     }
 
     try {
-      // If it's a report request, generate an analytical report
-      if (isReportRequest && !isDownloadRequest) {
-        // Try to find relevant knowledge base documents for enhanced report
+      // If it's a report request, first ask clarifying questions (unless user is responding to questions)
+      if (isReportRequest && !isDownloadRequest && !isQuestionResponse) {
+        // Try to find relevant knowledge base documents for enhanced questioning
         const relevantKnowledge = await this.searchRelevantKnowledge(originalPrompt, userId);
         
         if (relevantKnowledge.length > 0) {
           const document = relevantKnowledge[0];
+          
+          // Check if user wants to skip questions (detect phrases like "just generate", "skip questions", "no questions")
+          const skipQuestions = /\b(just generate|skip questions|no questions|direct report|immediately|straight away)\b/i.test(originalPrompt);
+          
+          if (skipQuestions) {
+            // Generate report directly without questions
+            const analyticalReport = await reportGenerator.generateAnalyticalReport({
+              type: 'me_evaluation',
+              documentContent: document.content,
+              documentTitle: document.title,
+              userId: userId,
+              customPrompt: originalPrompt
+            });
+            
+            return analyticalReport.content;
+          } else {
+            // Generate intelligent questions first
+            const questionSet = await questionGenerator.generateContextualQuestions(
+              originalPrompt,
+              document.content,
+              document.title
+            );
+            
+            const questionResponse = `I can definitely help you create a professional M&E report! 
+
+${questionGenerator.formatQuestionsForUser(questionSet)}`;
+            
+            return questionResponse;
+          }
+        }
+      }
+
+      // If user is responding to questions, process answers and generate report
+      if (isReportRequest && isQuestionResponse) {
+        const relevantKnowledge = await this.searchRelevantKnowledge("document analysis report", userId);
+        
+        if (relevantKnowledge.length > 0) {
+          const document = relevantKnowledge[0];
           const analyticalReport = await reportGenerator.generateAnalyticalReport({
-            type: 'analysis',
+            type: 'me_evaluation',
             documentContent: document.content,
             documentTitle: document.title,
             userId: userId,
-            customPrompt: originalPrompt
+            customPrompt: `Based on user responses: ${originalPrompt}. Generate a customized M&E report.`
           });
           
           return analyticalReport.content;

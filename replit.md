@@ -8,6 +8,10 @@ This is a modern, luxurious AI chatbot application built for internal use at BPN
 
 Preferred communication style: Simple, everyday language. User prefers more natural, ChatGPT-like responses - conversational, helpful, and engaging while maintaining professionalism.
 
+M&E Focus: User specifically requested AI to be specialized in Monitoring & Evaluation (M&E) rather than general business analysis. Reports should focus on M&E best practices, frameworks, outcomes, indicators, and impact assessment.
+
+Interactive Questioning: User wants AI to proactively ask clarifying questions before generating reports to better understand user needs and create more targeted, valuable outputs. This should be implemented with "highest creativity" to make the feature exceptional.
+
 ## System Architecture
 
 ### Full-Stack Architecture
@@ -194,6 +198,22 @@ Key entities include:
 2. **Extract → Process text** (pdf-parse, mammoth libraries with fallback mechanisms)
 3. **Chunk → Embed → Store** (intelligent chunking with overlap and vector embeddings)
 4. **Query → Search → Generate** (vector similarity search with contextual AI responses)
+
+### AI Intelligence & M&E Expertise Overhaul ✅
+- **M&E Specialization**: Complete transformation from generic business analysis to specialized Monitoring & Evaluation expertise
+- **Professional M&E Report Generation**: Six specialized report types (baseline, progress, outcome, impact, evaluation, framework assessment)
+- **OECD-DAC Evaluation Standards**: Integration of international evaluation criteria and best practices
+- **Intelligent Questioning System**: Proactive clarifying questions before report generation to ensure targeted, valuable outputs
+- **Context-Aware Report Types**: Automatic detection of report type based on user requests and document content
+- **Enhanced Report Templates**: Professional M&E report structures with executive summaries, findings, recommendations, and implementation steps
+
+### Interactive Questioning Feature ✅
+- **Contextual Question Generation**: AI analyzes user requests and documents to generate relevant clarifying questions
+- **Stakeholder-Focused Questions**: Questions tailored to different audiences (donors, management, beneficiaries, government partners)
+- **Report-Type Specific Questions**: Specialized questions for baseline, progress, outcome, impact, evaluation, and framework assessments
+- **Intelligent Follow-up**: Dynamic follow-up questions based on user responses for deeper customization
+- **User Choice Options**: Users can answer questions for customized reports or skip questions for standard reports
+- **Professional Question Categories**: Questions organized by M&E categories (stakeholder, scope, methodology, indicators, timeline, resources, context)
 
 ### Future Enhancements
 - **Microsoft Graph Integration** - SharePoint and OneDrive support
