@@ -6,7 +6,7 @@ This is a modern, luxurious AI chatbot application built for internal use at BPN
 
 ## User Preferences
 
-Preferred communication style: Simple, everyday language.
+Preferred communication style: Simple, everyday language. User prefers more natural, ChatGPT-like responses - conversational, helpful, and engaging while maintaining professionalism.
 
 ## System Architecture
 
