@@ -51,27 +51,27 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           className={`p-4 rounded-lg ${
             isUser 
               ? "bg-bpn-turquoise/90 text-white ml-12" 
-              : "bg-white/95 text-gray-900 mr-12"
+              : "bg-white/95 dark:bg-gray-800/95 text-gray-900 dark:text-white mr-12"
           }`}
         >
           <div className="space-y-3">
             {hasAttachments && (
               <div className="flex items-center space-x-2">
-                <FileText className={`w-4 h-4 ${isUser ? "text-white/70" : "text-gray-600"}`} />
-                <span className={`text-xs ${isUser ? "text-white/70" : "text-gray-600"}`}>
+                <FileText className={`w-4 h-4 ${isUser ? "text-white/70" : "text-gray-600 dark:text-gray-300"}`} />
+                <span className={`text-xs ${isUser ? "text-white/70" : "text-gray-600 dark:text-gray-300"}`}>
                   Attachment included
                 </span>
               </div>
             )}
             
             <div className="prose prose-sm max-w-none">
-              <p className={`text-sm whitespace-pre-wrap font-medium ${isUser ? "text-white" : "text-gray-900"}`}>
+              <p className={`text-sm whitespace-pre-wrap font-medium ${isUser ? "text-white" : "text-gray-900 dark:text-white"}`}>
                 {message.content}
               </p>
             </div>
 
             {!isUser && (
-              <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+              <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex items-center space-x-2">
                   <Badge variant="secondary" className="text-xs">
                     AI Generated
@@ -82,7 +82,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-xs p-1 h-auto text-gray-600"
+                      className="text-xs p-1 h-auto text-gray-600 dark:text-gray-300"
                     >
                       <ExternalLink className="w-3 h-3 mr-1" />
                       Sources
@@ -92,7 +92,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-xs p-1 h-auto text-gray-600"
+                  className="text-xs p-1 h-auto text-gray-600 dark:text-gray-300"
                 >
                   <Check className="w-3 h-3 mr-1" />
                   Helpful

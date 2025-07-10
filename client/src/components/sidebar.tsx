@@ -66,7 +66,7 @@ export function Sidebar({ currentChatId, onChatSelect, onNewChat }: SidebarProps
       {/* Header */}
       <div className="relative z-10 p-6 border-b border-white/10">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-bpn-black flex items-center">
+          <h1 className="text-2xl font-bold text-bpn-black dark:text-white flex items-center">
             <Brain className="text-bpn-turquoise mr-3" />
             Denyse
           </h1>
@@ -80,7 +80,7 @@ export function Sidebar({ currentChatId, onChatSelect, onNewChat }: SidebarProps
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
                   llmMode === "online" 
                     ? "bg-bpn-turquoise text-white" 
-                    : "text-bpn-black hover:bg-white/20"
+                    : "text-bpn-black dark:text-white hover:bg-white/20"
                 }`}
               >
                 Online
@@ -92,7 +92,7 @@ export function Sidebar({ currentChatId, onChatSelect, onNewChat }: SidebarProps
                 className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
                   llmMode === "local" 
                     ? "bg-bpn-turquoise text-white" 
-                    : "text-bpn-black hover:bg-white/20"
+                    : "text-bpn-black dark:text-white hover:bg-white/20"
                 }`}
               >
                 Local
@@ -104,7 +104,7 @@ export function Sidebar({ currentChatId, onChatSelect, onNewChat }: SidebarProps
         {/* New Chat Button */}
         <Button
           onClick={onNewChat}
-          className="w-full liquid-glass-strong rounded-xl p-4 text-bpn-black hover:bg-white/40 transition-all duration-300 group ripple-effect"
+          className="w-full liquid-glass-strong rounded-xl p-4 text-bpn-black dark:text-white hover:bg-white/40 transition-all duration-300 group ripple-effect"
           variant="ghost"
         >
           <div className="flex items-center justify-center space-x-2">
@@ -118,15 +118,15 @@ export function Sidebar({ currentChatId, onChatSelect, onNewChat }: SidebarProps
       <div className="flex-1 relative z-10">
         <ScrollArea className="h-full">
           <div className="p-6">
-            <h2 className="text-lg font-semibold text-bpn-black mb-4 flex items-center">
+            <h2 className="text-lg font-semibold text-bpn-black dark:text-white mb-4 flex items-center">
               <History className="text-bpn-turquoise mr-2" />
               Recent
             </h2>
             
             {chats.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-sm text-bpn-black/70">No chats yet</p>
-                <p className="text-xs text-bpn-black/50 mt-1">Start a new conversation to see it here</p>
+                <p className="text-sm text-bpn-black/70 dark:text-white/70">No chats yet</p>
+                <p className="text-xs text-bpn-black/50 dark:text-white/50 mt-1">Start a new conversation to see it here</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -150,10 +150,10 @@ export function Sidebar({ currentChatId, onChatSelect, onNewChat }: SidebarProps
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-bpn-black truncate">
+                        <p className="text-sm font-medium text-bpn-black dark:text-white truncate">
                           {chat.title}
                         </p>
-                        <p className="text-xs text-bpn-black/70 mt-1">
+                        <p className="text-xs text-bpn-black/70 dark:text-white/70 mt-1">
                           {formatChatDate(chat.updatedAt)}
                         </p>
                       </div>
