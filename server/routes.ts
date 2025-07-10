@@ -22,7 +22,7 @@ if (!fs.existsSync(uploadDir)) {
 const upload = multer({
   dest: uploadDir,
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+    fileSize: 50 * 1024 * 1024, // Increased to 50MB limit for larger documents
   },
   fileFilter: (req, file, cb) => {
     const allowedMimeTypes = [
@@ -30,12 +30,21 @@ const upload = multer({
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       "application/msword",
       "text/plain",
+      "text/html",
+      "text/markdown", 
+      "text/csv",
+      "application/rtf",
+      "application/json",
     ];
     
-    if (allowedMimeTypes.includes(file.mimetype)) {
+    // Also allow based on file extension for better compatibility
+    const allowedExtensions = ['.pdf', '.docx', '.doc', '.txt', '.html', '.md', '.csv', '.rtf', '.json'];
+    const fileExtension = path.extname(file.originalname).toLowerCase();
+    
+    if (allowedMimeTypes.includes(file.mimetype) || allowedExtensions.includes(fileExtension)) {
       cb(null, true);
     } else {
-      cb(new Error("Invalid file type. Only PDF, DOCX, DOC, and TXT files are allowed."));
+      cb(new Error(`Invalid file type. Allowed types: ${allowedExtensions.join(', ')}`));
     }
   },
 });

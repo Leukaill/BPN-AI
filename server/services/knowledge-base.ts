@@ -9,6 +9,19 @@ let pdfParse: any;
 let mammoth: any;
 let textract: any;
 
+// Try to load libraries at module level as fallback
+try {
+  pdfParse = require("pdf-parse");
+} catch (e) {
+  console.log("pdf-parse not available at module level");
+}
+
+try {
+  mammoth = require("mammoth");
+} catch (e) {
+  console.log("mammoth not available at module level");
+}
+
 interface ProcessedKnowledge {
   title: string;
   content: string;
@@ -65,18 +78,29 @@ class KnowledgeBaseService {
       const module = await import(moduleName);
       switch (globalVar) {
         case "pdfParse":
-          pdfParse = module.default;
+          // Handle both CommonJS and ES6 module formats
+          pdfParse = module.default || module;
           break;
         case "mammoth":
-          mammoth = module.default;
+          mammoth = module.default || module;
           break;
         case "textract":
-          textract = module;
+          textract = module.default || module;
           break;
       }
       console.log(`✓ ${moduleName} loaded successfully`);
     } catch (error) {
       console.warn(`⚠ Could not load ${moduleName}:`, error.message);
+      // For pdf-parse, try alternative approach
+      if (moduleName === "pdf-parse") {
+        try {
+          const altModule = require("pdf-parse");
+          pdfParse = altModule;
+          console.log(`✓ ${moduleName} loaded via require`);
+        } catch (requireError) {
+          console.warn(`⚠ Could not load ${moduleName} via require:`, requireError.message);
+        }
+      }
     }
   }
 
@@ -290,13 +314,19 @@ class KnowledgeBaseService {
   }
 
   private async extractPdfText(filePath: string): Promise<ExtractionResult> {
+    // Try to ensure pdf-parse is loaded
     if (!pdfParse) {
-      return {
-        text: "",
-        success: false,
-        method: "pdf",
-        error: "PDF parsing library not available",
-      };
+      try {
+        pdfParse = require("pdf-parse");
+        console.log("✓ pdf-parse loaded via require in extractPdfText");
+      } catch (e) {
+        return {
+          text: "",
+          success: false,
+          method: "pdf",
+          error: "PDF parsing library not available",
+        };
+      }
     }
 
     try {
@@ -307,7 +337,13 @@ class KnowledgeBaseService {
         throw new Error('File does not appear to be a valid PDF');
       }
       
-      const data = await pdfParse(dataBuffer);
+      console.log(`Attempting to parse PDF with buffer size: ${dataBuffer.length} bytes`);
+      
+      const data = await pdfParse(dataBuffer, {
+        max: 0, // Parse all pages
+      });
+      
+      console.log(`PDF parse result: ${data.text ? data.text.length : 0} characters extracted`);
       
       // Validate extracted text is readable and not binary data
       if (!data.text || data.text.length < 10) {
