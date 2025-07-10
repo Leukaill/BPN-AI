@@ -10,16 +10,16 @@ class GeminiService {
     });
   }
 
-  async generateResponse(prompt: string): Promise<string> {
+  async generateResponse(prompt: string, options: any = {}): Promise<string> {
     try {
       const response = await this.ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: prompt,
         generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 2048,
+          temperature: options.temperature || 0.7,
+          topK: options.topK || 40,
+          topP: options.topP || 0.95,
+          maxOutputTokens: options.maxTokens || 2048,
         },
       });
 
