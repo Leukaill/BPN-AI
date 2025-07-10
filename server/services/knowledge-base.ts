@@ -310,24 +310,33 @@ class KnowledgeBaseService {
 
   private async extractPdfTextWithFallback(filePath: string): Promise<ExtractionResult> {
     try {
-      // Try with different PDF parsing options
+      // Skip if PDF parsing already failed
       if (!pdfParse) {
-        const pdfModule = await import("pdf-parse");
-        pdfParse = pdfModule.default;
+        return {
+          text: "",
+          success: false,
+          method: "pdf-fallback",
+          error: "PDF parsing library not available",
+        };
       }
 
       const dataBuffer = fs.readFileSync(filePath);
       
-      // Try with different parsing options
+      // Try with simpler parsing options and timeout
       const parseOptions = [
-        { max: 0, normalizeWhitespace: true, disableCombineTextItems: false },
-        { max: 0, normalizeWhitespace: false, disableCombineTextItems: true },
         { max: 10, normalizeWhitespace: true }, // Limit to first 10 pages
+        { max: 5, normalizeWhitespace: false }, // Even smaller limit
       ];
 
       for (const options of parseOptions) {
         try {
-          const data = await pdfParse(dataBuffer, options);
+          const parsePromise = pdfParse(dataBuffer, options);
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('PDF fallback timeout')), 15000);
+          });
+          
+          const data = await Promise.race([parsePromise, timeoutPromise]);
+          
           if (data.text && data.text.trim().length > 0 && this.isValidTextContent(data.text)) {
             return {
               text: data.text,
@@ -370,11 +379,18 @@ class KnowledgeBaseService {
       const dataBuffer = fs.readFileSync(filePath);
       console.log(`Processing PDF file: ${filePath} (${dataBuffer.length} bytes)`);
       
-      const data = await pdfParse(dataBuffer, {
+      // Add timeout to prevent hanging
+      const parsePromise = pdfParse(dataBuffer, {
         max: 0, // Parse all pages
         normalizeWhitespace: true,
         disableCombineTextItems: false
       });
+      
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('PDF parsing timeout after 30 seconds')), 30000);
+      });
+      
+      const data = await Promise.race([parsePromise, timeoutPromise]);
       
       console.log(`✓ PDF parsed successfully: ${data.numpages} pages, ${data.text.length} characters`);
       
