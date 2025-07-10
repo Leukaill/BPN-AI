@@ -215,8 +215,21 @@ Key entities include:
 - **User Choice Options**: Users can answer questions for customized reports or skip questions for standard reports
 - **Professional Question Categories**: Questions organized by M&E categories (stakeholder, scope, methodology, indicators, timeline, resources, context)
 
+### Local LLM Integration (July 2025) ✅
+- **Local Llama 3.1 8B Support**: Complete migration from Google Gemini to local Llama 3.1 8B model
+- **Ollama API Integration**: Full support for local LLM API calls with configurable endpoints
+- **Environment Configuration**: LOCAL_LLM_URL and LOCAL_LLM_MODEL environment variables for customization
+- **Connection Testing**: Built-in API endpoint `/api/llm/test` to verify local LLM connectivity and available models
+- **Enhanced Privacy**: All AI processing now happens locally without external API dependencies
+- **Fallback Embeddings**: Local embedding generation with automatic fallback mechanisms
+
+### Configuration for Local LLM
+- **Default URL**: http://localhost:11434 (standard Ollama port)
+- **Default Model**: llama3.1:8b
+- **API Endpoints**: Compatible with Ollama API format
+- **Test Endpoint**: GET /api/llm/test (requires authentication)
+
 ### Future Enhancements
 - **Microsoft Graph Integration** - SharePoint and OneDrive support
-- **Local LLM Support** - Ollama integration for offline AI
-- **Toggle modes** - Switch between online and local AI
 - **Vector Database** - Upgrade from memory storage to persistent vector DB
+- **Model Management** - Dynamic model switching and management interface

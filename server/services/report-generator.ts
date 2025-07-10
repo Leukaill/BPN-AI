@@ -1,5 +1,5 @@
 import { storage } from '../storage';
-import { geminiService } from './gemini';
+import { localLLMService } from './local-llm';
 
 interface ReportRequest {
   type: 'me_progress' | 'me_outcome' | 'me_impact' | 'me_evaluation' | 'me_baseline' | 'me_framework_assessment';
@@ -28,7 +28,7 @@ export class ReportGenerator {
     
     const reportPrompt = this.buildReportPrompt(type, documentContent, documentTitle, customPrompt);
     
-    const rawReport = await geminiService.generateResponse(reportPrompt);
+    const rawReport = await localLLMService.generateResponse(reportPrompt);
     
     return this.parseReportResponse(rawReport, documentTitle);
   }

@@ -2,7 +2,7 @@ import { storage } from "../storage";
 import { KnowledgeBase, InsertKnowledgeBase } from "@shared/schema";
 import fs from "fs";
 import path from "path";
-import { geminiService } from "./gemini";
+import { localLLMService } from "./local-llm";
 
 // Custom error classes to match routes.ts
 class ValidationError extends Error {
@@ -644,7 +644,7 @@ class KnowledgeBaseService {
         setTimeout(() => reject(new Error('Embedding generation timeout')), 30000); // 30 second timeout
       });
       
-      const embeddingPromise = geminiService.generateEmbedding(text.slice(0, 2000)); // Limit text for embedding
+      const embeddingPromise = localLLMService.generateEmbedding(text.slice(0, 2000)); // Limit text for embedding
       
       const embedding = await Promise.race([embeddingPromise, timeoutPromise]) as number[];
       await storage.updateKnowledgeBaseEmbedding(knowledgeId, JSON.stringify(embedding));

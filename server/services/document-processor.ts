@@ -3,7 +3,7 @@ import { Document } from "@shared/schema";
 import fs from "fs";
 import path from "path";
 // Use existing gemini service for embeddings
-import { geminiService } from "./gemini";
+import { localLLMService } from "./local-llm";
 
 interface DocumentChunk {
   id: string;
@@ -175,7 +175,7 @@ class DocumentProcessor {
   // Step 3: Generate embeddings using Gemini
   private async generateEmbedding(text: string): Promise<number[]> {
     try {
-      return await geminiService.generateEmbedding(text);
+      return await localLLMService.generateEmbedding(text);
     } catch (error) {
       console.error("Embedding generation error:", error);
       // Fallback: create a simple hash-based embedding

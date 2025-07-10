@@ -1,4 +1,4 @@
-import { geminiService } from './gemini';
+import { localLLMService } from './local-llm';
 
 interface QuestionSet {
   context: string;

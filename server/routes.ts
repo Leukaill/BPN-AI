@@ -802,6 +802,36 @@ ${content}`;
     }),
   );
 
+  // Local LLM connection test endpoint
+  app.get(
+    "/api/llm/test",
+    requireAuth,
+    asyncHandler(async (req: Request, res: Response) => {
+      const { localLLMService } = await import("./services/local-llm");
+      
+      try {
+        const isConnected = await localLLMService.testConnection();
+        const availableModels = await localLLMService.getAvailableModels();
+        
+        res.json({
+          connected: isConnected,
+          models: availableModels,
+          baseURL: process.env.LOCAL_LLM_URL || "http://localhost:11434",
+          selectedModel: process.env.LOCAL_LLM_MODEL || "llama3.1:8b",
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        res.status(500).json({
+          connected: false,
+          error: error.message,
+          baseURL: process.env.LOCAL_LLM_URL || "http://localhost:11434",
+          selectedModel: process.env.LOCAL_LLM_MODEL || "llama3.1:8b",
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }),
+  );
+
   // Health check endpoint
   app.get(
     "/api/health",

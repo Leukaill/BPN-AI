@@ -1,5 +1,5 @@
 import { storage } from "../storage";
-import { geminiService } from "./gemini";
+import { localLLMService } from "./local-llm";
 import { documentProcessor } from "./document-processor";
 import { reportGenerator } from "./report-generator";
 import { questionGenerator } from "./question-generator";
@@ -533,7 +533,7 @@ Your file has been generated and is ready for download. The download link will e
       console.log(`Final context length: ${contextualPrompt.length}`);
 
       // Generate response
-      const rawResponse = await geminiService.generateResponse(contextualPrompt);
+      const rawResponse = await localLLMService.generateResponse(contextualPrompt);
       console.log(`Generated response length: ${rawResponse.length}`);
 
       // Clean response formatting
