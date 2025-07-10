@@ -644,7 +644,8 @@ class KnowledgeBaseService {
         setTimeout(() => reject(new Error('Embedding generation timeout')), 30000); // 30 second timeout
       });
       
-      const embeddingPromise = localLLMService.generateEmbedding(text.slice(0, 2000)); // Limit text for embedding
+      const { llmErrorHandler } = await import("./llm-error-handler");
+      const embeddingPromise = llmErrorHandler.generateEmbedding(text.slice(0, 2000), "knowledge base entry"); // Limit text for embedding
       
       const embedding = await Promise.race([embeddingPromise, timeoutPromise]) as number[];
       await storage.updateKnowledgeBaseEmbedding(knowledgeId, JSON.stringify(embedding));

@@ -28,7 +28,13 @@ export class ReportGenerator {
     
     const reportPrompt = this.buildReportPrompt(type, documentContent, documentTitle, customPrompt);
     
-    const rawReport = await localLLMService.generateResponse(reportPrompt);
+    const { llmErrorHandler } = await import("./llm-error-handler");
+    const rawReport = await llmErrorHandler.generateResponse(reportPrompt, {
+      temperature: 0.6, // Slightly lower temperature for more consistent reports
+      maxTokens: 3000,  // More tokens for detailed reports
+      topK: 30,
+      topP: 0.9
+    }, `${type} report generation`);
     
     return this.parseReportResponse(rawReport, documentTitle);
   }

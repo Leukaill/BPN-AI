@@ -2,7 +2,7 @@ import { storage } from "../storage";
 import { Document } from "@shared/schema";
 import fs from "fs";
 import path from "path";
-// Use existing gemini service for embeddings
+// Use local LLM service for embeddings
 import { localLLMService } from "./local-llm";
 
 interface DocumentChunk {
@@ -172,13 +172,14 @@ class DocumentProcessor {
     return chunks;
   }
 
-  // Step 3: Generate embeddings using Gemini
+  // Step 3: Generate embeddings using Local LLM with enhanced error handling
   private async generateEmbedding(text: string): Promise<number[]> {
     try {
-      return await localLLMService.generateEmbedding(text);
+      const { llmErrorHandler } = await import("./llm-error-handler");
+      return await llmErrorHandler.generateEmbedding(text, "document chunk processing");
     } catch (error) {
       console.error("Embedding generation error:", error);
-      // Fallback: create a simple hash-based embedding
+      // Fallback: use the enhanced fallback from local LLM service
       return this.createFallbackEmbedding(text);
     }
   }
@@ -312,7 +313,8 @@ class DocumentProcessor {
   async searchDocuments(query: string, userId: number): Promise<Document[]> {
     try {
       const userDocuments = await storage.getUserDocuments(userId);
-      const queryEmbedding = await aiService.generateEmbedding(query);
+      const { llmErrorHandler } = await import("./llm-error-handler");
+      const queryEmbedding = await llmErrorHandler.generateEmbedding(query, "document search");
       
       // Simple similarity search (in production, use a proper vector database)
       const scoredDocuments = userDocuments

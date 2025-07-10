@@ -802,30 +802,183 @@ ${content}`;
     }),
   );
 
-  // Local LLM connection test endpoint
+  // Enhanced Local LLM status and test endpoint
   app.get(
-    "/api/llm/test",
+    "/api/llm/status",
     requireAuth,
     asyncHandler(async (req: Request, res: Response) => {
       const { localLLMService } = await import("./services/local-llm");
       
       try {
-        const isConnected = await localLLMService.testConnection();
-        const availableModels = await localLLMService.getAvailableModels();
+        const status = await localLLMService.getStatus();
+        const config = localLLMService.getConfig();
+        
+        const { llmErrorHandler } = await import("./services/llm-error-handler");
+        const serviceStatus = await llmErrorHandler.getServiceStatus();
         
         res.json({
-          connected: isConnected,
-          models: availableModels,
-          baseURL: process.env.LOCAL_LLM_URL || "http://localhost:11434",
-          selectedModel: process.env.LOCAL_LLM_MODEL || "llama3.1:8b",
+          ...status,
+          serviceStatus: serviceStatus.status,
+          serviceMessage: serviceStatus.message,
+          config: {
+            baseURL: config.baseURL,
+            model: config.model,
+            temperature: config.temperature,
+            maxTokens: config.maxTokens,
+            timeout: config.timeout,
+            retries: config.retries,
+          },
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        const config = localLLMService.getConfig();
+        res.status(500).json({
+          connected: false,
+          error: error.message,
+          config: {
+            baseURL: config.baseURL,
+            model: config.model,
+          },
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }),
+  );
+
+  // Model information endpoint
+  app.get(
+    "/api/llm/model/:modelName?",
+    requireAuth,
+    asyncHandler(async (req: Request, res: Response) => {
+      const { localLLMService } = await import("./services/local-llm");
+      const modelName = req.params.modelName;
+      
+      try {
+        const modelInfo = await localLLMService.getModelInfo(modelName);
+        const isAvailable = await localLLMService.isModelAvailable(modelName);
+        
+        res.json({
+          modelInfo,
+          available: isAvailable,
           timestamp: new Date().toISOString(),
         });
       } catch (error) {
         res.status(500).json({
-          connected: false,
           error: error.message,
-          baseURL: process.env.LOCAL_LLM_URL || "http://localhost:11434",
-          selectedModel: process.env.LOCAL_LLM_MODEL || "llama3.1:8b",
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }),
+  );
+
+  // Update LLM configuration endpoint
+  app.post(
+    "/api/llm/config",
+    requireAuth,
+    asyncHandler(async (req: Request, res: Response) => {
+      const { localLLMService } = await import("./services/local-llm");
+      
+      try {
+        const { baseURL, model, temperature, maxTokens, timeout, retries } = req.body;
+        
+        const updateConfig: any = {};
+        if (baseURL) updateConfig.baseURL = baseURL;
+        if (model) updateConfig.model = model;
+        if (temperature !== undefined) updateConfig.temperature = parseFloat(temperature);
+        if (maxTokens !== undefined) updateConfig.maxTokens = parseInt(maxTokens);
+        if (timeout !== undefined) updateConfig.timeout = parseInt(timeout);
+        if (retries !== undefined) updateConfig.retries = parseInt(retries);
+        
+        localLLMService.updateConfig(updateConfig);
+        
+        const newStatus = await localLLMService.getStatus();
+        res.json({
+          success: true,
+          status: newStatus,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        res.status(400).json({
+          success: false,
+          error: error.message,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }),
+  );
+
+  // Comprehensive LLM diagnostics endpoint
+  app.get(
+    "/api/llm/diagnostics",
+    requireAuth,
+    asyncHandler(async (req: Request, res: Response) => {
+      const { llmConnectionTest } = await import("./services/llm-connection-test");
+      
+      try {
+        const fullTest = req.query.full === "true";
+        
+        if (fullTest) {
+          const diagnostics = await llmConnectionTest.runFullTest();
+          res.json({
+            type: "full_diagnostics",
+            ...diagnostics,
+            timestamp: new Date().toISOString(),
+          });
+        } else {
+          const quickCheck = await llmConnectionTest.quickCheck();
+          res.json({
+            type: "quick_check",
+            ...quickCheck,
+            timestamp: new Date().toISOString(),
+          });
+        }
+      } catch (error) {
+        res.status(500).json({
+          type: "diagnostics_error",
+          error: error.message,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }),
+  );
+
+  // LLM test generation endpoint
+  app.post(
+    "/api/llm/test-generation",
+    requireAuth,
+    asyncHandler(async (req: Request, res: Response) => {
+      const { llmErrorHandler } = await import("./services/llm-error-handler");
+      
+      try {
+        const { prompt, temperature, maxTokens } = req.body;
+        
+        if (!prompt) {
+          return res.status(400).json({
+            success: false,
+            error: "Prompt is required",
+            timestamp: new Date().toISOString(),
+          });
+        }
+
+        const startTime = Date.now();
+        const response = await llmErrorHandler.generateResponse(prompt, {
+          temperature: temperature || 0.7,
+          maxTokens: maxTokens || 100,
+        }, "API test");
+        const responseTime = Date.now() - startTime;
+
+        res.json({
+          success: true,
+          prompt,
+          response,
+          responseTime,
+          responseLength: response.length,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        res.status(500).json({
+          success: false,
+          error: error.message,
           timestamp: new Date().toISOString(),
         });
       }

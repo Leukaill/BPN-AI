@@ -225,18 +225,22 @@ Key entities include:
 - **Professional Question Categories**: Questions organized by M&E categories (stakeholder, scope, methodology, indicators, timeline, resources, context)
 
 ### Local LLM Integration (July 2025) ✅
-- **Local Llama 3.1 8B Support**: Complete migration from Google Gemini to local Llama 3.1 8B model
-- **Ollama API Integration**: Full support for local LLM API calls with configurable endpoints
-- **Environment Configuration**: LOCAL_LLM_URL and LOCAL_LLM_MODEL environment variables for customization
-- **Connection Testing**: Built-in API endpoint `/api/llm/test` to verify local LLM connectivity and available models
-- **Enhanced Privacy**: All AI processing now happens locally without external API dependencies
-- **Fallback Embeddings**: Local embedding generation with automatic fallback mechanisms
+- **Complete Gemini Migration**: Fully removed Google Gemini service and migrated all AI operations to local Llama 3.1 8B model
+- **Enhanced Local LLM Service**: Robust connection handling with timeout, retry logic, exponential backoff, and connection state management
+- **Comprehensive Error Handling**: Advanced error wrapper with context-aware messages and intelligent fallback strategies
+- **Environment Configuration**: LOCAL_LLM_URL, LOCAL_LLM_MODEL, LOCAL_LLM_TIMEOUT, LOCAL_LLM_RETRIES for full customization
+- **Diagnostic Endpoints**: `/api/llm/status`, `/api/llm/diagnostics`, `/api/llm/test-generation` for monitoring and testing
+- **Enhanced Privacy**: All AI processing happens locally without external API dependencies
+- **Production-Ready**: Comprehensive testing, performance monitoring, and model management capabilities
 
 ### Configuration for Local LLM
 - **Default URL**: http://localhost:11434 (standard Ollama port)
 - **Default Model**: llama3.1:8b
 - **API Endpoints**: Compatible with Ollama API format
-- **Test Endpoint**: GET /api/llm/test (requires authentication)
+- **Status Endpoint**: GET /api/llm/status (enhanced service status)
+- **Diagnostics**: GET /api/llm/diagnostics (comprehensive testing)
+- **Test Generation**: POST /api/llm/test-generation (direct LLM testing)
+- **Configuration**: POST /api/llm/config (dynamic configuration updates)
 
 ### Future Enhancements
 - **Microsoft Graph Integration** - SharePoint and OneDrive support

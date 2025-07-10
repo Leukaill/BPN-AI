@@ -560,7 +560,8 @@ class KnowledgeBaseService {
 
       // Use first 2000 characters for embedding, clean the text
       const cleanText = text.replace(/\s+/g, " ").trim().slice(0, 2000);
-      const embeddingPromise = localLLMService.generateEmbedding(cleanText);
+      const { llmErrorHandler } = await import("./llm-error-handler");
+      const embeddingPromise = llmErrorHandler.generateEmbedding(cleanText, "knowledge base backup");
 
       const embedding = (await Promise.race([
         embeddingPromise,

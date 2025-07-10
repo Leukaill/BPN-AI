@@ -532,8 +532,14 @@ Your file has been generated and is ready for download. The download link will e
       const contextualPrompt = this.buildContextualPrompt(prompt, relevantKnowledge, documentContext);
       console.log(`Final context length: ${contextualPrompt.length}`);
 
-      // Generate response
-      const rawResponse = await localLLMService.generateResponse(contextualPrompt);
+      // Generate response with enhanced error handling
+      const { llmErrorHandler } = await import("./llm-error-handler");
+      const rawResponse = await llmErrorHandler.generateResponse(contextualPrompt, {
+        temperature: 0.7,
+        maxTokens: 2048,
+        topK: 40,
+        topP: 0.95
+      }, "chat response");
       console.log(`Generated response length: ${rawResponse.length}`);
 
       // Clean response formatting
@@ -580,7 +586,8 @@ Your file has been generated and is ready for download. The download link will e
 
   async generateEmbedding(text: string): Promise<number[]> {
     try {
-      return await geminiService.generateEmbedding(text);
+      const { llmErrorHandler } = await import("./llm-error-handler");
+      return await llmErrorHandler.generateEmbedding(text, "AI service embedding");
     } catch (error) {
       console.error("Error generating embedding:", error);
       throw new AIServiceError("Failed to generate embedding", error as Error);
