@@ -234,8 +234,8 @@ Key entities include:
 - **Production-Ready**: Comprehensive testing, performance monitoring, and model management capabilities
 
 ### Configuration for Local LLM
-- **Model**: llama3.1:8b (single model configuration)
-- **Default URL**: http://localhost:11434 (standard Ollama port)
+- **Model**: gemma3:latest (optimized for faster responses, fallback from llama3.1:8b due to timeout issues)
+- **Connection URL**: https://e95d8e25239a.ngrok-free.app (ngrok tunnel to localhost:11434)
 - **API Endpoints**: Compatible with Ollama API format
 - **Status Endpoint**: GET /api/llm/status (enhanced service status)
 - **Validation**: GET /api/llm/validate (validate Llama 3.1 8B availability)
