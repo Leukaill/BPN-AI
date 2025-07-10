@@ -8,146 +8,326 @@ interface AIResponse {
   sources?: string[];
 }
 
+interface KnowledgeEntry {
+  id: number;
+  title: string;
+  content: string;
+  relevanceScore?: number;
+}
+
 class AIService {
   constructor() {
     // Initialize any required services
   }
 
-  async generateResponse(prompt: string, userId: number, chatId: number): Promise<string> {
+  private async searchRelevantKnowledge(
+    prompt: string,
+    userId: number,
+  ): Promise<KnowledgeEntry[]> {
     try {
-      // Prepare context with ChatGPT-like personality
-      let context = `You are Denyse, a conversational and helpful AI assistant for BPN organization. 
+      // First, try specific knowledge base search
+      const specificMatches = await knowledgeBaseService.searchKnowledge(
+        prompt,
+        userId,
+        10,
+      );
+
+      if (specificMatches.length > 0) {
+        console.log(
+          `Found ${specificMatches.length} specific knowledge matches`,
+        );
+        return specificMatches;
+      }
+
+      // If no specific matches, try broader search with keywords
+      const keywords = this.extractKeywords(prompt);
+      const broadMatches = await this.searchByKeywords(keywords, userId);
+
+      if (broadMatches.length > 0) {
+        console.log(`Found ${broadMatches.length} broad keyword matches`);
+        return broadMatches;
+      }
+
+      // Last resort: get most recent documents
+      const recentDocs = await storage.getUserKnowledgeBase(userId);
+      console.log(
+        `No matches found, using ${recentDocs.length} recent documents`,
+      );
+      return recentDocs.slice(0, 5);
+    } catch (error) {
+      console.error("Knowledge search error:", error);
+      return [];
+    }
+  }
+
+  private extractKeywords(prompt: string): string[] {
+    // Simple keyword extraction - you can enhance this with NLP libraries
+    const stopWords = [
+      "the",
+      "a",
+      "an",
+      "and",
+      "or",
+      "but",
+      "in",
+      "on",
+      "at",
+      "to",
+      "for",
+      "of",
+      "with",
+      "by",
+      "is",
+      "are",
+      "was",
+      "were",
+      "what",
+      "how",
+      "when",
+      "where",
+      "why",
+      "who",
+    ];
+
+    return prompt
+      .toLowerCase()
+      .replace(/[^\w\s]/g, "")
+      .split(/\s+/)
+      .filter((word) => word.length > 2 && !stopWords.includes(word))
+      .slice(0, 5); // Take top 5 keywords
+  }
+
+  private async searchByKeywords(
+    keywords: string[],
+    userId: number,
+  ): Promise<KnowledgeEntry[]> {
+    const allKnowledge = await storage.getUserKnowledgeBase(userId);
+
+    return allKnowledge
+      .map((kb) => {
+        const content = (kb.title + " " + kb.content).toLowerCase();
+        const matches = keywords.filter((keyword) => content.includes(keyword));
+
+        return {
+          ...kb,
+          relevanceScore: matches.length / keywords.length,
+        };
+      })
+      .filter((kb) => kb.relevanceScore > 0)
+      .sort((a, b) => (b.relevanceScore || 0) - (a.relevanceScore || 0))
+      .slice(0, 5);
+  }
+
+  private buildContextualPrompt(
+    originalPrompt: string,
+    relevantKnowledge: KnowledgeEntry[],
+    specificDocument: any = null,
+    documentContext: string = "",
+    bpnKnowledge: any[] = [],
+  ): string {
+    let context = `You are Denyse, a conversational and helpful AI assistant for BPN organization.
+
+CRITICAL INSTRUCTIONS:
+- You have access to the user's uploaded documents and knowledge base
+- When users ask about documents, surveys, reports, or any content, you MUST reference the specific information provided below
+- Always cite the source document when referencing information
+- Be specific and detailed in your responses, using actual data and quotes from the documents
+- Never claim you don't have access to information that is clearly provided in the context below
 
 Your personality:
 - Be natural, warm, and engaging like ChatGPT
 - Use conversational language while maintaining professionalism
 - Ask follow-up questions when helpful
 - Show enthusiasm for helping users
-- Acknowledge when you don't know something
+- Acknowledge when you don't know something (but first check the provided context)
 - Be empathetic and understanding
 - Use examples and analogies to explain complex topics
 - Structure responses clearly with headings and bullet points when appropriate
 
-Always aim to be helpful, accurate, and engaging in your responses.\n\n`;
-      
-      // Check if the prompt references a specific document
+`;
+
+    // Add specific document context if available
+    if (specificDocument && specificDocument.extractedText) {
+      context += `SPECIFIC DOCUMENT REQUESTED:\n`;
+      context += `Document: ${specificDocument.originalName}\n`;
+      context += `Content: ${specificDocument.extractedText}\n`;
+      context += `---\n\n`;
+    }
+
+    // Add vector search results
+    if (
+      documentContext &&
+      documentContext !==
+        "I don't have any relevant document content to answer your question. Please upload documents first."
+    ) {
+      context += `DOCUMENT PROCESSOR RESULTS:\n`;
+      context += documentContext;
+      context += `\n---\n\n`;
+    }
+
+    // Add relevant knowledge base entries
+    if (relevantKnowledge.length > 0) {
+      context += `RELEVANT KNOWLEDGE BASE DOCUMENTS:\n`;
+      relevantKnowledge.forEach((kb, index) => {
+        context += `\n[DOCUMENT ${index + 1}]\n`;
+        context += `Title: ${kb.title}\n`;
+        context += `Content: ${kb.content}\n`;
+        if (kb.relevanceScore) {
+          context += `Relevance Score: ${(kb.relevanceScore * 100).toFixed(1)}%\n`;
+        }
+        context += `---\n`;
+      });
+      context += `\n`;
+    }
+
+    // Add BPN organizational knowledge
+    if (bpnKnowledge.length > 0) {
+      context += `BPN ORGANIZATION KNOWLEDGE:\n`;
+      bpnKnowledge.forEach((kb) => {
+        context += `Topic: ${kb.title}\n`;
+        context += `Information: ${kb.content}\n`;
+        context += `---\n`;
+      });
+      context += `\n`;
+    }
+
+    // Add the user's question and final instructions
+    context += `USER QUESTION: ${originalPrompt}\n\n`;
+
+    context += `RESPONSE INSTRUCTIONS:
+1. ALWAYS check the knowledge base documents above before responding
+2. If the user asks about ANY document, survey, analysis, or content mentioned in the knowledge base, provide detailed information from that specific content
+3. Quote relevant sections and cite the source document title
+4. If you find relevant information in the knowledge base, structure your response around that information
+5. Use natural, conversational language as if you're discussing documents you've personally reviewed
+6. If the question can be answered using the provided context, do NOT claim you don't have access to the information
+7. When referencing data or findings, be specific and include actual numbers, percentages, or quotes when available
+8. If multiple documents are relevant, synthesize information from all relevant sources
+
+Remember: You have access to all the document content shown above. Use it to provide comprehensive, informed responses.`;
+
+    return context;
+  }
+
+  async generateResponse(
+    prompt: string,
+    userId: number,
+    chatId: number,
+  ): Promise<string> {
+    try {
+      console.log(`Generating response for user ${userId}, chat ${chatId}`);
+      console.log(`Original prompt: "${prompt}"`);
+
+      // Extract document ID if referenced
       const documentIdMatch = prompt.match(/\[Document:.*?- ID: (\d+)\]/);
       let specificDocument = null;
-      
+
       if (documentIdMatch) {
         const documentId = parseInt(documentIdMatch[1]);
         specificDocument = await storage.getDocument(documentId);
+        console.log(
+          `Specific document requested: ${specificDocument?.originalName}`,
+        );
       }
-      
-      // Clean the prompt from document references
-      const cleanPrompt = prompt.replace(/\[Document:.*?- ID: \d+\]/g, '').trim();
-      
-      // Step 1: Use vector search to find most relevant document chunks
-      const relevantContext = await documentProcessor.generateContextualResponse(cleanPrompt, userId);
-      
-      if (relevantContext && relevantContext !== "I don't have any relevant document content to answer your question. Please upload documents first.") {
-        context += "RELEVANT DOCUMENT CONTENT:\n";
-        context += relevantContext;
-        context += "\n\n";
-      }
-      
-      // Step 2: If there's a specific document referenced, get its full content too
-      if (specificDocument && specificDocument.extractedText) {
-        context += `SPECIFIC DOCUMENT ANALYSIS:\n`;
-        context += `Document: ${specificDocument.originalName}\n`;
-        context += `Content: ${specificDocument.extractedText}\n`;
-        context += `---\n\n`;
-      } else if (specificDocument && !specificDocument.extractedText) {
-        context += `DOCUMENT STATUS:\n`;
-        context += `Document: ${specificDocument.originalName}\n`;
-        context += `Status: Document is still being processed or text extraction failed.\n`;
-        context += `---\n\n`;
-      }
-      
-      // Step 3: Add user knowledge base for additional context
-      const userKnowledge = await knowledgeBaseService.searchKnowledge(cleanPrompt, userId, 5);
-      console.log(`Found ${userKnowledge.length} knowledge base entries for query: "${cleanPrompt}"`);
-      
-      if (userKnowledge.length > 0) {
-        context += "USER KNOWLEDGE BASE:\n";
-        userKnowledge.forEach(kb => {
-          context += `Document: ${kb.title}\n`;
-          context += `Content: ${kb.content.slice(0, 1000)}...\n`;
-          context += `---\n`;
-        });
-        context += "\n";
-      } else {
-        // If no specific match, get all user knowledge for broader context
-        const allUserKnowledge = await storage.getUserKnowledgeBase(userId);
-        console.log(`No specific matches found. Found ${allUserKnowledge.length} total knowledge entries.`);
-        
-        if (allUserKnowledge.length > 0) {
-          context += "USER KNOWLEDGE BASE (ALL AVAILABLE):\n";
-          allUserKnowledge.slice(0, 3).forEach(kb => {
-            context += `Document: ${kb.title}\n`;
-            context += `Content: ${kb.content.slice(0, 1000)}...\n`;
-            context += `---\n`;
-          });
-          context += "\n";
-        }
-      }
-      
-      // Step 4: Add BPN knowledge for additional context
-      const bpnKnowledge = await storage.getBpnKnowledge();
-      if (bpnKnowledge.length > 0) {
-        context += "BPN Organization Knowledge:\n";
-        bpnKnowledge.slice(0, 2).forEach(kb => {
-          context += `- ${kb.title}: ${kb.content.slice(0, 200)}...\n`;
-        });
-        context += "\n";
-      }
-      
-      // Step 5: Add the user question and instructions
-      context += `User Question: ${cleanPrompt}\n\n`;
-      context += `Instructions: 
-- IMPORTANT: If the user asks about ANY document, survey, or content that appears in the USER KNOWLEDGE BASE above, respond with detailed information from that knowledge base content
-- Base your response primarily on the knowledge base content provided above
-- If you see document content in the knowledge base, analyze it thoroughly and provide specific insights
-- When referencing information, cite the source document title
-- Be conversational and engaging, like you're having a natural conversation with a colleague
-- Use "I" statements and acknowledge that you have access to their uploaded documents
-- If asked about a specific document or survey, provide detailed analysis based on the content shown above
-- Never claim you don't have access to documents that are clearly shown in the knowledge base content above`;
 
-      return await geminiService.generateResponse(context);
+      // Clean the prompt
+      const cleanPrompt = prompt
+        .replace(/\[Document:.*?- ID: \d+\]/g, "")
+        .trim();
+
+      // Get relevant knowledge using enhanced search
+      const relevantKnowledge = await this.searchRelevantKnowledge(
+        cleanPrompt,
+        userId,
+      );
+      console.log(
+        `Found ${relevantKnowledge.length} relevant knowledge entries`,
+      );
+
+      // Get vector search results
+      const documentContext =
+        await documentProcessor.generateContextualResponse(cleanPrompt, userId);
+      console.log(
+        `Document processor context length: ${documentContext?.length || 0}`,
+      );
+
+      // Get BPN knowledge
+      const bpnKnowledge = await storage.getBpnKnowledge();
+      console.log(`BPN knowledge entries: ${bpnKnowledge.length}`);
+
+      // Build comprehensive context
+      const contextualPrompt = this.buildContextualPrompt(
+        cleanPrompt,
+        relevantKnowledge,
+        specificDocument,
+        documentContext,
+        bpnKnowledge.slice(0, 3), // Limit BPN knowledge to avoid context overflow
+      );
+
+      console.log(`Final context length: ${contextualPrompt.length}`);
+
+      // Generate response
+      const response = await geminiService.generateResponse(contextualPrompt);
+      console.log(`Generated response length: ${response.length}`);
+
+      return response;
     } catch (error) {
       console.error("AI service error:", error);
       return "I apologize, but I'm experiencing technical difficulties. Please try again later.";
     }
   }
 
-
-
-  async generateReport(prompt: string, documentIds: number[], userId: number): Promise<string> {
+  async generateReport(
+    prompt: string,
+    documentIds: number[],
+    userId: number,
+  ): Promise<string> {
     try {
+      console.log(`Generating report for ${documentIds.length} documents`);
+
       const documents = await Promise.all(
-        documentIds.map(id => storage.getDocument(id))
+        documentIds.map((id) => storage.getDocument(id)),
       );
 
-      const validDocuments = documents.filter(doc => 
-        doc && doc.userId === userId && doc.text
+      const validDocuments = documents.filter(
+        (doc) =>
+          doc && doc.userId === userId && (doc.text || doc.extractedText),
       );
 
       if (validDocuments.length === 0) {
-        return "No valid documents found for report generation.";
+        return "No valid documents found for report generation. Please ensure documents are uploaded and processed successfully.";
       }
 
-      let reportContext = "Generate a comprehensive report based on the following documents:\n\n";
-      
-      validDocuments.forEach(doc => {
-        reportContext += `Document: ${doc!.originalName}\n`;
-        reportContext += `Content: ${doc!.text}\n\n`;
+      let reportContext = `You are Denyse, an AI assistant specialized in document analysis and report generation.
+
+REPORT GENERATION INSTRUCTIONS:
+- Analyze all provided documents thoroughly
+- Create a comprehensive, well-structured report
+- Include specific data, quotes, and findings from the documents
+- Use clear headings and sections
+- Provide actionable insights and recommendations
+- Cite sources when referencing specific information
+
+DOCUMENTS TO ANALYZE:
+`;
+
+      validDocuments.forEach((doc, index) => {
+        const content = doc!.text || doc!.extractedText || "";
+        reportContext += `\n[DOCUMENT ${index + 1}]\n`;
+        reportContext += `Title: ${doc!.originalName}\n`;
+        reportContext += `Content: ${content}\n`;
+        reportContext += `---\n`;
       });
 
-      reportContext += `Report Requirements: ${prompt}\n\n`;
-      reportContext += "Please create a detailed, well-structured report that addresses the requirements and draws insights from the provided documents.";
+      reportContext += `\nREPORT REQUIREMENTS:\n${prompt}\n\n`;
+      reportContext += `Please generate a detailed, professional report that addresses all requirements and provides insights based on the document analysis. Structure the report with clear sections and include specific references to the source documents.`;
 
-      return await geminiService.generateResponse(reportContext);
+      console.log(`Report context length: ${reportContext.length}`);
+
+      const report = await geminiService.generateResponse(reportContext);
+      console.log(`Generated report length: ${report.length}`);
+
+      return report;
     } catch (error) {
       console.error("Report generation error:", error);
       return "Failed to generate report. Please try again later.";
@@ -156,6 +336,30 @@ Always aim to be helpful, accurate, and engaging in your responses.\n\n`;
 
   async generateEmbedding(text: string): Promise<number[]> {
     return await geminiService.generateEmbedding(text);
+  }
+
+  // Debug method to test knowledge base access
+  async debugKnowledgeAccess(userId: number): Promise<any> {
+    try {
+      const allKnowledge = await storage.getUserKnowledgeBase(userId);
+      const bpnKnowledge = await storage.getBpnKnowledge();
+
+      return {
+        userKnowledgeCount: allKnowledge.length,
+        bpnKnowledgeCount: bpnKnowledge.length,
+        sampleUserKnowledge: allKnowledge.slice(0, 2).map((kb) => ({
+          title: kb.title,
+          contentPreview: kb.content.slice(0, 100) + "...",
+        })),
+        sampleBpnKnowledge: bpnKnowledge.slice(0, 2).map((kb) => ({
+          title: kb.title,
+          contentPreview: kb.content.slice(0, 100) + "...",
+        })),
+      };
+    } catch (error) {
+      console.error("Debug knowledge access error:", error);
+      return { error: error.message };
+    }
   }
 }
 
