@@ -3,6 +3,7 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { User, Bot, FileText, Check, ExternalLink } from "lucide-react";
 import { Message } from "@shared/schema";
+import { DownloadButton } from "./download-button";
 
 interface FormattedMessageProps {
   content: string;
@@ -11,7 +12,44 @@ interface FormattedMessageProps {
 
 function FormattedMessage({ content, isUser }: FormattedMessageProps) {
   const formatText = (text: string) => {
-    // First, let's intelligently break long text into paragraphs
+    // First, check if the message contains download information
+    const downloadMatch = text.match(/📁 DOWNLOAD AVAILABLE[\s\S]*?🔗 Download Link: (\/api\/downloads\/[a-f0-9-]+)/);
+    
+    if (downloadMatch) {
+      // Extract download information
+      const downloadUrl = downloadMatch[1];
+      const filenameMatch = text.match(/• File: ([^\n]+)/);
+      const formatMatch = text.match(/• Format: ([^\n]+)/);
+      const sizeMatch = text.match(/• Size: ([^\n]+)/);
+      const expiresMatch = text.match(/• Expires: ([^\n]+)/);
+      
+      if (filenameMatch && formatMatch && sizeMatch && expiresMatch) {
+        // Split content into main content and download section
+        const mainContent = text.split('---')[0].trim();
+        
+        // Parse main content as normal
+        const mainFormatted = formatMainContent(mainContent);
+        
+        // Add download button
+        return [
+          ...mainFormatted,
+          <DownloadButton
+            key="download"
+            downloadUrl={downloadUrl}
+            filename={filenameMatch[1]}
+            format={formatMatch[1]}
+            size={sizeMatch[1]}
+            expiresAt={expiresMatch[1]}
+          />
+        ];
+      }
+    }
+    
+    // If no download, format as normal
+    return formatMainContent(text);
+  };
+
+  const formatMainContent = (text: string) => {
     // Split on sentence boundaries and group into logical paragraphs
     const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim());
     const paragraphs: string[] = [];

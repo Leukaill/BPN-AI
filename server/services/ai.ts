@@ -258,6 +258,98 @@ Remember: You have access to all the document content shown above. Use it to pro
       .trim();
   }
 
+  private async handleDownloadRequest(
+    response: string,
+    userId: number,
+    originalPrompt: string,
+  ): Promise<string> {
+    // Check if user is requesting a download
+    const downloadKeywords = [
+      'download', 'save', 'export', 'file', 'document', 'generate file',
+      'create file', 'download this', 'save this', 'export this',
+      'give me a file', 'can i download', 'make it downloadable'
+    ];
+    
+    const promptLower = originalPrompt.toLowerCase();
+    const isDownloadRequest = downloadKeywords.some(keyword => 
+      promptLower.includes(keyword)
+    );
+
+    if (!isDownloadRequest) {
+      return response;
+    }
+
+    try {
+      // Extract filename from prompt or use default
+      let filename = 'denyse_response';
+      const filenameMatch = promptLower.match(/(?:save|download|export|file|document)(?:\s+(?:as|to|named?))?\s+["']?([a-zA-Z0-9\-_\s]+)["']?/);
+      if (filenameMatch) {
+        filename = filenameMatch[1].trim().replace(/\s+/g, '_');
+      } else {
+        // Try to extract a meaningful filename from the context
+        const contextMatch = promptLower.match(/(?:report|analysis|summary|document|file)(?:\s+(?:on|about|for))?\s+([a-zA-Z0-9\-_\s]+)/);
+        if (contextMatch) {
+          filename = contextMatch[1].trim().replace(/\s+/g, '_');
+        }
+      }
+
+      // Determine format based on content or user request
+      let format = 'txt';
+      if (promptLower.includes('html') || promptLower.includes('webpage')) {
+        format = 'html';
+      } else if (promptLower.includes('markdown') || promptLower.includes('md')) {
+        format = 'md';
+      } else if (promptLower.includes('json')) {
+        format = 'json';
+      } else if (promptLower.includes('csv')) {
+        format = 'csv';
+      }
+
+      // Generate download using internal API call
+      const downloadResponse = await fetch(`http://localhost:5000/api/downloads/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          content: response,
+          filename: filename,
+          format: format
+        })
+      });
+
+      if (downloadResponse.ok) {
+        const downloadData = await downloadResponse.json();
+        
+        // Enhance the response with download link
+        const enhancedResponse = `${response}
+
+---
+
+📁 DOWNLOAD AVAILABLE
+
+I've generated a downloadable file for you:
+
+• File: ${downloadData.filename}
+• Format: ${downloadData.format.toUpperCase()}
+• Size: ${Math.round(downloadData.size / 1024)} KB
+• Expires: ${new Date(downloadData.expiresAt).toLocaleString()}
+
+🔗 Download Link: ${downloadData.downloadUrl}
+
+Click the link above to download your file. The download will expire in 1 hour for security purposes.`;
+
+        return enhancedResponse;
+      }
+    } catch (error) {
+      console.error('Error generating download:', error);
+      // Return original response if download generation fails
+      return response + '\n\n(Note: Download generation temporarily unavailable)';
+    }
+
+    return response;
+  }
+
   async generateResponse(
     prompt: string,
     userId: number,
@@ -322,7 +414,10 @@ Remember: You have access to all the document content shown above. Use it to pro
       // Clean up formatting to remove asterisks and improve readability
       const cleanResponse = this.cleanResponseFormatting(rawResponse);
       
-      return cleanResponse;
+      // Check if user requested a download and handle it
+      const finalResponse = await this.handleDownloadRequest(cleanResponse, userId, cleanPrompt);
+      
+      return finalResponse;
     } catch (error) {
       console.error("AI service error:", error);
       return "I apologize, but I'm experiencing technical difficulties. Please try again later.";
