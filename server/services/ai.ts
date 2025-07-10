@@ -14,8 +14,20 @@ class AIService {
 
   async generateResponse(prompt: string, userId: number, chatId: number): Promise<string> {
     try {
-      // Prepare context
-      let context = "You are BPN AI Assistant, a helpful AI assistant for BPN organization. You are professional, knowledgeable, and provide accurate information.\n\n";
+      // Prepare context with ChatGPT-like personality
+      let context = `You are BPN AI Assistant, a conversational and helpful AI assistant for BPN organization. 
+
+Your personality:
+- Be natural, warm, and engaging like ChatGPT
+- Use conversational language while maintaining professionalism
+- Ask follow-up questions when helpful
+- Show enthusiasm for helping users
+- Acknowledge when you don't know something
+- Be empathetic and understanding
+- Use examples and analogies to explain complex topics
+- Structure responses clearly with headings and bullet points when appropriate
+
+Always aim to be helpful, accurate, and engaging in your responses.\n\n`;
       
       // Check if the prompt references a specific document
       const documentIdMatch = prompt.match(/\[Document:.*?- ID: (\d+)\]/);
@@ -63,7 +75,13 @@ class AIService {
       
       // Step 4: Add the user question and instructions
       context += `User Question: ${cleanPrompt}\n\n`;
-      context += "Please provide a comprehensive, detailed response based on the document content above. When referencing specific information, cite the source document and chunk number. If analyzing documents, provide specific insights, recommendations, and actionable feedback.";
+      context += `Instructions: 
+- Provide a comprehensive, detailed response based on the document content above
+- When referencing specific information, cite the source document and chunk number
+- If analyzing documents, provide specific insights, recommendations, and actionable feedback
+- Be conversational and engaging, like you're having a natural conversation with a colleague
+- Use "I" statements and personal touches to make responses feel more human
+- Ask clarifying questions when appropriate to better help the user`;
 
       return await geminiService.generateResponse(context);
     } catch (error) {

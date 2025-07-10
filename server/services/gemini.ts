@@ -14,6 +14,12 @@ class GeminiService {
       const response = await this.ai.models.generateContent({
         model: "gemini-2.5-flash",
         contents: prompt,
+        generationConfig: {
+          temperature: 0.7,
+          topK: 40,
+          topP: 0.95,
+          maxOutputTokens: 2048,
+        },
       });
 
       return response.text || "I couldn't generate a response.";
