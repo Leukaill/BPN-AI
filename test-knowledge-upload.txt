@@ -1,0 +1,20 @@
+BPN Knowledge Base Test Document
+
+This is a test document for the BPN AI knowledge base training system.
+
+Key Features:
+- Document upload and processing
+- AI training with custom knowledge
+- PostgreSQL database integration
+- Semantic search capabilities
+
+Technologies Used:
+- React frontend with TypeScript
+- Node.js backend with Express
+- Drizzle ORM for database operations
+- Google Gemini API for AI embeddings
+- PDF, DOCX, and TXT file processing
+
+The system allows users to upload documents that will be processed and stored in the knowledge base. The AI will then use this knowledge to provide more accurate and contextual responses to user questions.
+
+This document should be successfully processed and added to the knowledge base when uploaded through the settings page.

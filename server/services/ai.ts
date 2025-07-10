@@ -1,6 +1,7 @@
 import { storage } from "../storage";
 import { geminiService } from "./gemini";
 import { documentProcessor } from "./document-processor";
+import { knowledgeBaseService } from "./knowledge-base";
 
 interface AIResponse {
   content: string;
@@ -63,7 +64,17 @@ Always aim to be helpful, accurate, and engaging in your responses.\n\n`;
         context += `---\n\n`;
       }
       
-      // Step 3: Add BPN knowledge for additional context
+      // Step 3: Add user knowledge base for additional context
+      const userKnowledge = await knowledgeBaseService.searchKnowledge(cleanPrompt, userId, 3);
+      if (userKnowledge.length > 0) {
+        context += "USER KNOWLEDGE BASE:\n";
+        userKnowledge.forEach(kb => {
+          context += `- ${kb.title}: ${kb.content.slice(0, 300)}...\n`;
+        });
+        context += "\n";
+      }
+      
+      // Step 4: Add BPN knowledge for additional context
       const bpnKnowledge = await storage.getBpnKnowledge();
       if (bpnKnowledge.length > 0) {
         context += "BPN Organization Knowledge:\n";
@@ -73,10 +84,10 @@ Always aim to be helpful, accurate, and engaging in your responses.\n\n`;
         context += "\n";
       }
       
-      // Step 4: Add the user question and instructions
+      // Step 5: Add the user question and instructions
       context += `User Question: ${cleanPrompt}\n\n`;
       context += `Instructions: 
-- Provide a comprehensive, detailed response based on the document content above
+- Provide a comprehensive, detailed response based on the document content and knowledge base above
 - When referencing specific information, cite the source document and chunk number
 - If analyzing documents, provide specific insights, recommendations, and actionable feedback
 - Be conversational and engaging, like you're having a natural conversation with a colleague

@@ -50,10 +50,24 @@ export const bpnKnowledge = pgTable("bpn_knowledge", {
   lastScraped: timestamp("last_scraped").defaultNow().notNull(),
 });
 
+export const knowledgeBase = pgTable("knowledge_base", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  source: text("source").notNull(), // 'file_upload' or 'manual'
+  filename: text("filename"), // Original filename if uploaded
+  mimeType: text("mime_type"), // File type
+  embedding: text("embedding"), // JSON string of vector embedding
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   chats: many(chats),
   documents: many(documents),
+  knowledgeBase: many(knowledgeBase),
 }));
 
 export const chatsRelations = relations(chats, ({ one, many }) => ({
@@ -67,6 +81,10 @@ export const messagesRelations = relations(messages, ({ one }) => ({
 
 export const documentsRelations = relations(documents, ({ one }) => ({
   user: one(users, { fields: [documents.userId], references: [users.id] }),
+}));
+
+export const knowledgeBaseRelations = relations(knowledgeBase, ({ one }) => ({
+  user: one(users, { fields: [knowledgeBase.userId], references: [users.id] }),
 }));
 
 // Schemas
@@ -94,6 +112,13 @@ export const insertDocumentSchema = createInsertSchema(documents).omit({
   embedding: true,
 });
 
+export const insertKnowledgeBaseSchema = createInsertSchema(knowledgeBase).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  embedding: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -104,3 +129,5 @@ export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Document = typeof documents.$inferSelect;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
 export type BpnKnowledge = typeof bpnKnowledge.$inferSelect;
+export type KnowledgeBase = typeof knowledgeBase.$inferSelect;
+export type InsertKnowledgeBase = z.infer<typeof insertKnowledgeBaseSchema>;

@@ -6,6 +6,8 @@ import { insertChatSchema, insertMessageSchema } from "@shared/schema";
 import { aiService } from "./services/ai";
 import { documentProcessor } from "./services/document-processor";
 import { webScraper } from "./services/web-scraper";
+import { knowledgeBaseService } from "./services/knowledge-base";
+import { db } from "./db";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -265,6 +267,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Web scraping initiated" });
     } catch (error) {
       res.status(500).json({ message: "Failed to initiate web scraping" });
+    }
+  });
+
+  // Knowledge Base routes
+  app.get("/api/knowledge-base", requireAuth, async (req, res) => {
+    try {
+      const knowledge = await storage.getUserKnowledgeBase(req.user.id);
+      res.json(knowledge);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch knowledge base" });
+    }
+  });
+
+  app.get("/api/knowledge-base/stats", requireAuth, async (req, res) => {
+    try {
+      const stats = await knowledgeBaseService.getUserKnowledgeStats(req.user.id);
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch knowledge base stats" });
+    }
+  });
+
+  app.post("/api/knowledge-base/upload", requireAuth, upload.single("file"), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const title = req.body.title || undefined;
+      const knowledgeBase = await knowledgeBaseService.processAndStoreKnowledge(
+        req.file,
+        req.user.id,
+        title
+      );
+
+      // Clean up uploaded file
+      if (fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+
+      res.status(201).json(knowledgeBase);
+    } catch (error) {
+      console.error("Knowledge base upload error:", error);
+      res.status(500).json({ error: error.message || "Failed to upload knowledge base file" });
+    }
+  });
+
+  app.delete("/api/knowledge-base/:id", requireAuth, async (req, res) => {
+    try {
+      const knowledgeId = parseInt(req.params.id);
+      await knowledgeBaseService.deleteKnowledge(knowledgeId, req.user.id);
+      res.status(204).send();
+    } catch (error) {
+      if (error.message.includes("not found")) {
+        res.status(404).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: "Failed to delete knowledge base entry" });
+      }
+    }
+  });
+
+  // Database connection status
+  app.get("/api/database/status", requireAuth, async (req, res) => {
+    try {
+      // Test database connection
+      await db.execute("SELECT 1");
+      
+      // Get database stats
+      const userCount = await db.execute("SELECT COUNT(*) as count FROM users");
+      const chatCount = await db.execute("SELECT COUNT(*) as count FROM chats");
+      const knowledgeCount = await db.execute("SELECT COUNT(*) as count FROM knowledge_base");
+      
+      res.json({
+        status: "connected",
+        healthy: true,
+        stats: {
+          users: userCount.rows?.[0]?.count || 0,
+          chats: chatCount.rows?.[0]?.count || 0,
+          knowledgeBase: knowledgeCount.rows?.[0]?.count || 0
+        },
+        lastChecked: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Database status check failed:", error);
+      res.json({
+        status: "error",
+        healthy: false,
+        error: error.message,
+        lastChecked: new Date().toISOString()
+      });
     }
   });
 

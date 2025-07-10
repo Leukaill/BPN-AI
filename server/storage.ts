@@ -1,4 +1,4 @@
-import { users, chats, messages, documents, bpnKnowledge, type User, type InsertUser, type Chat, type InsertChat, type Message, type InsertMessage, type Document, type InsertDocument, type BpnKnowledge } from "@shared/schema";
+import { users, chats, messages, documents, bpnKnowledge, knowledgeBase, type User, type InsertUser, type Chat, type InsertChat, type Message, type InsertMessage, type Document, type InsertDocument, type BpnKnowledge, type KnowledgeBase, type InsertKnowledgeBase } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, lt } from "drizzle-orm";
 import session from "express-session";
@@ -38,12 +38,18 @@ export interface IStorage {
   upsertBpnKnowledge(url: string, title: string, content: string): Promise<void>;
   updateBpnKnowledgeEmbedding(id: number, embedding: string): Promise<void>;
   
+  // Knowledge base management
+  createKnowledgeBase(knowledgeBase: InsertKnowledgeBase): Promise<KnowledgeBase>;
+  getUserKnowledgeBase(userId: number): Promise<KnowledgeBase[]>;
+  updateKnowledgeBaseEmbedding(id: number, embedding: string): Promise<void>;
+  deleteKnowledgeBase(id: number): Promise<void>;
+  
   // Session store
-  sessionStore: session.SessionStore;
+  sessionStore: any;
 }
 
 export class DatabaseStorage implements IStorage {
-  sessionStore: session.SessionStore;
+  sessionStore: any;
 
   constructor() {
     this.sessionStore = new PostgresSessionStore({ 
@@ -168,6 +174,24 @@ export class DatabaseStorage implements IStorage {
 
   async updateBpnKnowledgeEmbedding(id: number, embedding: string): Promise<void> {
     await db.update(bpnKnowledge).set({ embedding }).where(eq(bpnKnowledge.id, id));
+  }
+
+  // Knowledge base management
+  async createKnowledgeBase(knowledgeBaseData: InsertKnowledgeBase): Promise<KnowledgeBase> {
+    const [newKnowledgeBase] = await db.insert(knowledgeBase).values(knowledgeBaseData).returning();
+    return newKnowledgeBase;
+  }
+
+  async getUserKnowledgeBase(userId: number): Promise<KnowledgeBase[]> {
+    return await db.select().from(knowledgeBase).where(eq(knowledgeBase.userId, userId)).orderBy(desc(knowledgeBase.createdAt));
+  }
+
+  async updateKnowledgeBaseEmbedding(id: number, embedding: string): Promise<void> {
+    await db.update(knowledgeBase).set({ embedding }).where(eq(knowledgeBase.id, id));
+  }
+
+  async deleteKnowledgeBase(id: number): Promise<void> {
+    await db.delete(knowledgeBase).where(eq(knowledgeBase.id, id));
   }
 }
 
