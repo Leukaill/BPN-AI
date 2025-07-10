@@ -600,37 +600,60 @@ class KnowledgeBaseService {
         console.log(`[Knowledge Search] Available document: "${kb.title}" (${kb.content.length} chars)`);
       });
 
-      // Simple text-based search first
+      // Enhanced text-based search with multiple matching strategies
       const scoredKnowledge = userKnowledge
         .map(kb => {
           let score = 0;
           
           // Text-based search
           const contentLower = kb.content.toLowerCase();
+          const titleLower = kb.title.toLowerCase();
           const queryLower = query.toLowerCase();
+          
+          // Extract keywords from query for better matching
+          const queryWords = queryLower
+            .replace(/[^\w\s]/g, '')
+            .split(/\s+/)
+            .filter(word => word.length > 2);
           
           // Exact phrase match gets highest score
           if (contentLower.includes(queryLower)) {
-            score += 0.8;
+            score += 1.0;
           }
           
-          // Individual word matches
-          const queryWords = queryLower.split(/\s+/);
+          // Title exact match gets very high score
+          if (titleLower.includes(queryLower)) {
+            score += 0.9;
+          }
+          
+          // Individual word matches in content
           queryWords.forEach(word => {
             if (contentLower.includes(word)) {
-              score += 0.2 / queryWords.length;
+              score += 0.3;
+            }
+            // Word in title gets extra score
+            if (titleLower.includes(word)) {
+              score += 0.4;
             }
           });
           
-          // Title matches get bonus
-          if (kb.title.toLowerCase().includes(queryLower)) {
-            score += 0.3;
+          // Partial matches for key terms
+          const keyTerms = ['aguka', 'program', 'training', 'questionnaire', 'survey', 'sessions'];
+          keyTerms.forEach(term => {
+            if (queryLower.includes(term) && (contentLower.includes(term) || titleLower.includes(term))) {
+              score += 0.5;
+            }
+          });
+          
+          // Give a base score to any document if no specific matches found
+          if (score === 0 && queryWords.some(word => word.length > 3)) {
+            score = 0.05; // Very small base score to ensure documents are considered
           }
           
           console.log(`[Knowledge Search] Document "${kb.title}" scored ${score.toFixed(2)}`);
           return { ...kb, score };
         })
-        .filter(kb => kb.score > 0.1) // Filter out very low scores
+        .filter(kb => kb.score > 0.01) // Very low threshold - be very inclusive
         .sort((a, b) => b.score - a.score)
         .slice(0, limit);
 

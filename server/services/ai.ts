@@ -25,18 +25,42 @@ class AIService {
     userId: number,
   ): Promise<KnowledgeEntry[]> {
     try {
-      // First, try specific knowledge base search
+      // Get all user documents first
+      const allDocs = await storage.getUserKnowledgeBase(userId);
+      console.log(`[Knowledge Search] Found ${allDocs.length} total knowledge entries`);
+      
+      if (allDocs.length === 0) {
+        return [];
+      }
+
+      // Log available documents
+      allDocs.forEach(doc => {
+        console.log(`[Knowledge Search] Available document: "${doc.title}" (${doc.content.length} chars)`);
+      });
+
+      // First, try specific knowledge base search with embedding similarity
       const specificMatches = await knowledgeBaseService.searchKnowledge(
         prompt,
         userId,
         10,
       );
 
-      if (specificMatches.length > 0) {
-        console.log(
-          `Found ${specificMatches.length} specific knowledge matches`,
-        );
-        return specificMatches;
+      // Log scoring results
+      specificMatches.forEach(doc => {
+        console.log(`[Knowledge Search] Document "${doc.title}" scored ${(doc as any).relevanceScore || 'N/A'}`);
+      });
+
+      // Use a much lower threshold for relevance - be more inclusive
+      const relevantMatches = specificMatches.filter(doc => {
+        const score = (doc as any).relevanceScore || 0;
+        return score > 0.01; // Very low threshold
+      });
+
+      console.log(`[Knowledge Search] Returning ${relevantMatches.length} scored results`);
+
+      if (relevantMatches.length > 0) {
+        console.log(`Found ${relevantMatches.length} specific knowledge matches`);
+        return relevantMatches;
       }
 
       // If no specific matches, try broader search with keywords
@@ -48,12 +72,9 @@ class AIService {
         return broadMatches;
       }
 
-      // Last resort: get most recent documents
-      const recentDocs = await storage.getUserKnowledgeBase(userId);
-      console.log(
-        `No matches found, using ${recentDocs.length} recent documents`,
-      );
-      return recentDocs.slice(0, 5);
+      // Last resort: return ALL documents for comprehensive analysis
+      console.log(`No matches found, using ALL ${allDocs.length} documents for comprehensive analysis`);
+      return allDocs;
     } catch (error) {
       console.error("Knowledge search error:", error);
       return [];
@@ -61,40 +82,30 @@ class AIService {
   }
 
   private extractKeywords(prompt: string): string[] {
-    // Simple keyword extraction - you can enhance this with NLP libraries
+    // Enhanced keyword extraction with better coverage
     const stopWords = [
-      "the",
-      "a",
-      "an",
-      "and",
-      "or",
-      "but",
-      "in",
-      "on",
-      "at",
-      "to",
-      "for",
-      "of",
-      "with",
-      "by",
-      "is",
-      "are",
-      "was",
-      "were",
-      "what",
-      "how",
-      "when",
-      "where",
-      "why",
-      "who",
+      "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with", "by",
+      "is", "are", "was", "were", "what", "how", "when", "where", "why", "who", "can", "could",
+      "would", "should", "will", "shall", "may", "might", "must", "do", "does", "did", "have",
+      "has", "had", "be", "been", "being", "this", "that", "these", "those", "me", "you", "your",
+      "tell", "about", "know", "inside", "document", "file"
     ];
 
-    return prompt
+    const keywords = prompt
       .toLowerCase()
       .replace(/[^\w\s]/g, "")
       .split(/\s+/)
-      .filter((word) => word.length > 2 && !stopWords.includes(word))
-      .slice(0, 5); // Take top 5 keywords
+      .filter((word) => word.length > 2 && !stopWords.includes(word));
+
+    // Include important terms even if they're shorter
+    const importantShortTerms = ["ai", "bpn", "pdf", "doc", "it"];
+    const shortTerms = prompt
+      .toLowerCase()
+      .replace(/[^\w\s]/g, "")
+      .split(/\s+/)
+      .filter((word) => importantShortTerms.includes(word));
+
+    return [...new Set([...keywords, ...shortTerms])].slice(0, 8); // More keywords for better matching
   }
 
   private async searchByKeywords(
@@ -165,15 +176,14 @@ Your personality:
       context += `\n---\n\n`;
     }
 
-    // Add relevant knowledge base entries
+    // Add relevant knowledge base entries with full content
     if (relevantKnowledge.length > 0) {
       context += `RELEVANT KNOWLEDGE BASE DOCUMENTS:\n`;
       relevantKnowledge.forEach((kb, index) => {
-        context += `\n[DOCUMENT ${index + 1}]\n`;
-        context += `Title: ${kb.title}\n`;
+        context += `\nDOCUMENT ${index + 1}: ${kb.title}\n`;
         context += `Content: ${kb.content}\n`;
-        if (kb.relevanceScore) {
-          context += `Relevance Score: ${(kb.relevanceScore * 100).toFixed(1)}%\n`;
+        if ((kb as any).score) {
+          context += `Relevance Score: ${((kb as any).score * 100).toFixed(1)}%\n`;
         }
         context += `---\n`;
       });
