@@ -392,6 +392,98 @@ class LocalLLMService {
   getConfig(): LocalLLMConfig {
     return { ...this.config };
   }
+
+  /**
+   * Get detailed model information
+   */
+  async getModelDetails(modelName?: string): Promise<any> {
+    try {
+      const targetModel = modelName || this.config.model;
+      
+      const response = await this.makeRequest(
+        `${this.config.baseURL}/api/show`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name: targetModel }),
+        },
+      );
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const data = await response.json();
+      return {
+        name: data.name || targetModel,
+        size: data.size || 'Unknown',
+        digest: data.digest || 'Unknown',
+        modified: data.modified_at || 'Unknown',
+        template: data.template || 'Unknown',
+        parameters: data.parameters || {},
+        modelfile: data.modelfile || 'Unknown'
+      };
+    } catch (error) {
+      console.error(`Error fetching model details for ${modelName}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Validate that Llama 3.1 8B is available and working
+   */
+  async validateLlamaModel(): Promise<{
+    success: boolean;
+    message: string;
+    details?: any;
+  }> {
+    try {
+      // Check if llama3.1:8b is available
+      const availableModels = await this.getAvailableModels();
+      if (!availableModels.includes('llama3.1:8b')) {
+        return {
+          success: false,
+          message: `Llama 3.1 8B not found. Available models: ${availableModels.join(', ') || 'None'}. Please run: ollama pull llama3.1:8b`
+        };
+      }
+
+      // Test the model with a simple request
+      try {
+        const testResponse = await this.generateResponse("Hello", {
+          temperature: 0.1,
+          maxTokens: 10
+        });
+        
+        if (!testResponse) {
+          return {
+            success: false,
+            message: `Llama 3.1 8B is available but not responding properly. Check your Ollama service.`
+          };
+        }
+
+        // Get model details
+        const modelDetails = await this.getModelDetails('llama3.1:8b');
+
+        return {
+          success: true,
+          message: `Llama 3.1 8B is working properly`,
+          details: modelDetails
+        };
+      } catch (testError) {
+        return {
+          success: false,
+          message: `Llama 3.1 8B failed test: ${testError.message}`
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: `Error validating Llama 3.1 8B: ${error.message}`
+      };
+    }
+  }
 }
 
 export const localLLMService = new LocalLLMService();

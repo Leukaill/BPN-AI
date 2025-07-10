@@ -234,13 +234,14 @@ Key entities include:
 - **Production-Ready**: Comprehensive testing, performance monitoring, and model management capabilities
 
 ### Configuration for Local LLM
+- **Model**: llama3.1:8b (single model configuration)
 - **Default URL**: http://localhost:11434 (standard Ollama port)
-- **Default Model**: llama3.1:8b
 - **API Endpoints**: Compatible with Ollama API format
 - **Status Endpoint**: GET /api/llm/status (enhanced service status)
+- **Validation**: GET /api/llm/validate (validate Llama 3.1 8B availability)
 - **Diagnostics**: GET /api/llm/diagnostics (comprehensive testing)
 - **Test Generation**: POST /api/llm/test-generation (direct LLM testing)
-- **Configuration**: POST /api/llm/config (dynamic configuration updates)
+- **Configuration**: POST /api/llm/config (runtime configuration updates)
 
 ### Future Enhancements
 - **Microsoft Graph Integration** - SharePoint and OneDrive support

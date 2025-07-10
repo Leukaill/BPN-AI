@@ -37,13 +37,15 @@ export class LLMErrorHandler {
           );
         }
         
-        if (error.message.includes("not accessible") || error.message.includes("Cannot connect")) {
+        if (error.message.includes("not accessible") || error.message.includes("Cannot connect") || error.message.includes("ECONNREFUSED")) {
           throw new Error(
-            `Cannot connect to your local LLM for ${context}. Please ensure:\n` +
-            `1. Ollama is running on your machine\n` +
-            `2. Your LOCAL_LLM_URL is correctly set\n` +
-            `3. Your model "${process.env.LOCAL_LLM_MODEL || 'llama3.1:8b'}" is available\n` +
-            `4. Your firewall allows the connection`
+            `Cannot connect to your local LLM for ${context}. Please check:\n` +
+            `1. Ollama is running: ollama serve\n` +
+            `2. Set LOCAL_LLM_URL to your machine's IP (not localhost): http://YOUR_IP:11434\n` +
+            `3. Your model "${process.env.LOCAL_LLM_MODEL || 'llama3.1:8b'}" is available: ollama list\n` +
+            `4. Your firewall allows connections on port 11434\n` +
+            `5. Ollama is configured to accept external connections\n` +
+            `Current URL: ${process.env.LOCAL_LLM_URL || 'http://localhost:11434'}`
           );
         }
         
@@ -176,10 +178,12 @@ export class LLMErrorHandler {
           success: false,
           message: "Cannot connect to your local LLM",
           recommendations: [
-            "Check if Ollama is running: ollama serve",
-            "Verify your LOCAL_LLM_URL environment variable",
-            "Ensure your firewall allows the connection",
-            "Check if the port is accessible from Replit"
+            "Start Ollama: ollama serve",
+            "Set LOCAL_LLM_URL to your machine's IP: http://YOUR_IP:11434 (not localhost)",
+            "Configure Ollama for external access: OLLAMA_HOST=0.0.0.0 ollama serve",
+            "Ensure port 11434 is open in your firewall",
+            "Verify Replit can reach your machine's IP address",
+            "Test connection: curl http://YOUR_IP:11434/api/tags"
           ]
         };
       }

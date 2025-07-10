@@ -985,6 +985,66 @@ ${content}`;
     }),
   );
 
+  // Validate Llama 3.1 8B model endpoint
+  app.get(
+    "/api/llm/validate",
+    requireAuth,
+    asyncHandler(async (req: Request, res: Response) => {
+      const { localLLMService } = await import("./services/local-llm");
+      
+      try {
+        const validation = await localLLMService.validateLlamaModel();
+        
+        res.json({
+          ...validation,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        res.status(500).json({
+          success: false,
+          error: error.message,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }),
+  );
+
+  // Get all available models with details
+  app.get(
+    "/api/llm/models",
+    requireAuth,
+    asyncHandler(async (req: Request, res: Response) => {
+      const { localLLMService } = await import("./services/local-llm");
+      
+      try {
+        const availableModels = await localLLMService.getAvailableModels();
+        const currentModel = localLLMService.getConfig().model;
+        
+        const modelsWithDetails = [];
+        for (const model of availableModels) {
+          const details = await localLLMService.getModelDetails(model);
+          modelsWithDetails.push({
+            name: model,
+            current: model === currentModel,
+            details: details
+          });
+        }
+        
+        res.json({
+          models: modelsWithDetails,
+          currentModel,
+          totalModels: availableModels.length,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        res.status(500).json({
+          error: error.message,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }),
+  );
+
   // Health check endpoint
   app.get(
     "/api/health",
