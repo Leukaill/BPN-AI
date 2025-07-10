@@ -30,6 +30,8 @@ class AIService {
 
   private async initializeService() {
     console.log("M&E AI Service initialized");
+    console.log(`[AI Service] LOCAL_LLM_URL: ${process.env.LOCAL_LLM_URL}`);
+    console.log(`[AI Service] LOCAL_LLM_MODEL: ${process.env.LOCAL_LLM_MODEL}`);
   }
 
   private async searchRelevantKnowledge(

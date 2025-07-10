@@ -65,6 +65,7 @@ class LocalLLMService {
       timeout: parseInt(process.env.LOCAL_LLM_TIMEOUT || "30000"), // 30 seconds
       retries: parseInt(process.env.LOCAL_LLM_RETRIES || "3"),
     };
+    console.log(`[LocalLLM] Configured with URL: ${this.config.baseURL}, Model: ${this.config.model}`);
   }
 
   /**
