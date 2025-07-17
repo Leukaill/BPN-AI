@@ -41,7 +41,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   // Load settings from localStorage on mount
   useEffect(() => {
-    const savedSettings = localStorage.getItem('bpn-settings');
+    const savedSettings = localStorage.getItem('denyse-settings');
     if (savedSettings) {
       try {
         const parsed = JSON.parse(savedSettings);
@@ -72,7 +72,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const updateSetting = <K extends keyof Settings>(key: K, value: Settings[K]) => {
     setSettings(prev => {
       const newSettings = { ...prev, [key]: value };
-      localStorage.setItem('bpn-settings', JSON.stringify(newSettings));
+      localStorage.setItem('denyse-settings', JSON.stringify(newSettings));
       return newSettings;
     });
   };

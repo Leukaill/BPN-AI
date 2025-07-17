@@ -36,7 +36,7 @@ The application uses a modern full-stack TypeScript architecture with:
 - **React with TypeScript** - Main frontend framework
 - **Vite** - Build tool and development server
 - **Tailwind CSS** - Utility-first CSS framework
-- **shadcn/ui** - Component library with custom BPN theming
+- **shadcn/ui** - Component library with custom Denyse theming
 - **TanStack Query** - Server state management
 - **Wouter** - Lightweight routing library
 

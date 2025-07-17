@@ -70,7 +70,7 @@ export default function SettingsPage() {
   const exportSettings = () => {
     const dataStr = JSON.stringify(settings, null, 2);
     const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const exportFileDefaultName = 'bpn-ai-settings.json';
+    const exportFileDefaultName = 'denyse-ai-settings.json';
     
     const linkElement = document.createElement('a');
     linkElement.setAttribute('href', dataUri);

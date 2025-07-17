@@ -172,7 +172,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
           <div className="flex-1">
             <div className="flex items-center space-x-2 mb-1">
               <span className="text-xs font-medium text-foreground/70">
-                {isUser ? "You" : "BPN AI"}
+                {isUser ? "You" : "Denyse AI"}
               </span>
               <span className="text-xs text-foreground/50">
                 {formatTime(message.createdAt)}

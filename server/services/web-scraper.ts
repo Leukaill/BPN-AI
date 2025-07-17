@@ -14,7 +14,7 @@ async function loadCheerio() {
 
 class WebScraper {
   private initialized = false;
-  private baseUrl = "https://www.bpn.rw";
+  private baseUrl = "https://www.company.com";
 
   async initialize() {
     if (!this.initialized) {

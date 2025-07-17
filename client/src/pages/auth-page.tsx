@@ -112,7 +112,7 @@ export default function AuthPage() {
                     {isLogin ? "Welcome Back" : "Create Account"}
                   </CardTitle>
                   <CardDescription className="text-slate-300">
-                    {isLogin ? "Sign in to your account" : "Join BPN AI Assistant today"}
+                    {isLogin ? "Sign in to your account" : "Join Denyse AI Assistant today"}
                   </CardDescription>
                 </CardHeader>
                 

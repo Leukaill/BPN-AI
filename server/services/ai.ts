@@ -237,9 +237,9 @@ FORMATTING REQUIREMENTS:
       context += `DOCUMENT PROCESSOR CONTEXT:\n${documentContext}\n\n`;
     }
 
-    // Add BPN knowledge if available
-    context += `BPN KNOWLEDGE BASE:\n`;
-    context += `Please check available BPN knowledge for relevant information.\n\n`;
+    // Add company knowledge if available
+    context += `COMPANY KNOWLEDGE BASE:\n`;
+    context += `Please check available company knowledge for relevant information.\n\n`;
 
     // Add the user's question and final instructions
     context += `USER QUESTION: ${originalPrompt}\n\n`;
@@ -526,7 +526,7 @@ Your file has been generated and is ready for download. The download link will e
         }
       }
 
-      // Get BPN knowledge
+      // Get company knowledge
       const denyseKnowledge = await storage.getDenyseKnowledge();
       console.log(`Denyse knowledge entries: ${denyseKnowledge.length}`);
 

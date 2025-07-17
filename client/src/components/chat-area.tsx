@@ -275,9 +275,9 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     <div className="flex items-start space-x-4">
                       <Globe className="text-denyse-green text-2xl mt-1" />
                       <div>
-                        <h3 className="font-semibold text-foreground mb-2">BPN Knowledge Base</h3>
+                        <h3 className="font-semibold text-foreground mb-2">Company Knowledge Base</h3>
                         <p className="text-sm text-foreground/70">
-                          Access information scraped from www.bpn.rw automatically.
+                          Access information from your company's knowledge base automatically.
                         </p>
                       </div>
                     </div>
