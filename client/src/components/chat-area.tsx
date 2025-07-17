@@ -173,7 +173,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
   return (
     <div className="flex-1 flex flex-col relative">
       {/* Liquid Glass Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-denyse-white/90 to-denyse-grey/30 backdrop-blur-sm"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-denyse-white/90 to-denyse-grey/30 dark:from-slate-800/50 dark:to-slate-900/30 backdrop-blur-sm"></div>
       
       {/* Chat Header */}
       <div className="relative z-10 liquid-glass-strong border-b border-white/10 p-6">
@@ -183,15 +183,15 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
               <Bot className="text-white text-xl" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-foreground">Denyse</h2>
-              <p className="text-sm text-foreground/70">Powered by Advanced Language Models</p>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Denyse</h2>
+              <p className="text-sm text-gray-600 dark:text-slate-300">Powered by Advanced Language Models</p>
             </div>
           </div>
           <div className="flex items-center space-x-3">
             <LiquidGlass className="rounded-full px-4 py-2 animate-morphing">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-denyse-green rounded-full animate-pulse"></div>
-                <span className="text-sm text-foreground font-medium">Online</span>
+                <span className="text-sm text-gray-900 dark:text-slate-200 font-medium">Online</span>
               </div>
             </LiquidGlass>
             <Button
@@ -219,7 +219,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                   <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                     Meet Denyse, your personal AI assistant
                   </h2>
-                  <p className="text-gray-800 dark:text-gray-200 max-w-2xl mx-auto">
+                  <p className="text-gray-800 dark:text-slate-300 max-w-2xl mx-auto">
                     I can help you analyze documents, extract information, generate reports, and answer questions using data from your uploaded files and your organization's knowledge base.
                   </p>
                 </div>
@@ -326,7 +326,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     <div className="mb-2 p-2 bg-denyse-turquoise/10 border border-denyse-turquoise/20 rounded-lg">
                       <div className="flex items-center space-x-2">
                         <FileText className="w-4 h-4 text-denyse-turquoise" />
-                        <span className="text-sm text-foreground font-medium">
+                        <span className="text-sm text-gray-900 dark:text-slate-200 font-medium">
                           {uploadedDocument.originalName}
                         </span>
                         <Badge variant="secondary" className="text-xs">
@@ -352,12 +352,12 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyDown={handleKeyPress}
-                    placeholder={uploadedDocument ? "Ask Denyse about this document..." : "Ask Denyse anything about your documents or BPN..."}
+                    placeholder={uploadedDocument ? "Ask Denyse about this document..." : "Ask Denyse anything about your documents or organization..."}
                     className="liquid-input resize-none min-h-[60px] max-h-32 pr-16"
                     disabled={sendMessageMutation.isPending}
                   />
                   {/* Character Counter */}
-                  <div className="absolute bottom-2 right-2 text-xs text-foreground/50">
+                  <div className="absolute bottom-2 right-2 text-xs text-gray-500 dark:text-slate-400">
                     {message.length}/2000
                   </div>
                 </div>
@@ -379,7 +379,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
           
           {/* Footer */}
           <div className="mt-4 text-center">
-            <p className="text-xs text-foreground/50">
+            <p className="text-xs text-gray-500 dark:text-slate-400">
               Denyse can make mistakes, so double-check important information. 
               <a href="#" className="text-denyse-turquoise hover:underline ml-1">Privacy Policy</a> | 
               <a href="#" className="text-denyse-turquoise hover:underline ml-1">Terms of Service</a>

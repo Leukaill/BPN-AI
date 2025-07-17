@@ -8,7 +8,7 @@ export default function HomePage() {
   const [currentChatId, setCurrentChatId] = useState<number | null>(null);
 
   return (
-    <div className="h-screen bg-gradient-to-br from-denyse-white via-denyse-grey to-denyse-white overflow-hidden relative">
+    <div className="h-screen bg-gradient-to-br from-denyse-white via-denyse-grey to-denyse-white dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 overflow-hidden relative">
       {/* Floating Liquid Elements Background */}
       <div className="floating-elements">
         <div className="absolute top-10 left-10 w-32 h-32 bg-denyse-turquoise opacity-20 rounded-full animate-bubble-float"></div>

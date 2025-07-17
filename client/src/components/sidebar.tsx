@@ -59,7 +59,7 @@ export function Sidebar({ currentChatId, onChatSelect, onNewChat }: SidebarProps
   };
 
   return (
-    <div className="w-80 sidebar-glass flex flex-col relative overflow-hidden">
+    <div className="w-80 sidebar-glass dark:bg-slate-900/50 flex flex-col relative overflow-hidden">
       {/* Liquid Glass Overlay */}
       <div className="absolute inset-0 liquid-gradient opacity-10"></div>
       
