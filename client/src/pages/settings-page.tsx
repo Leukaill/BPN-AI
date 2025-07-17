@@ -210,26 +210,26 @@ export default function SettingsPage() {
           </Badge>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {/* AI & Interface */}
-          <div className="space-y-6">
-            {/* AI Settings */}
+        <div className="space-y-8">
+          {/* Top Row - Main Settings */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* AI Assistant - Left */}
             <LiquidGlass>
               <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-lg">
-                    <Brain className="mr-2 text-denyse-turquoise w-5 h-5" />
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-xl">
+                    <Brain className="mr-3 text-denyse-turquoise w-6 h-6" />
                     AI Assistant
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm">AI Model</Label>
+                <CardContent className="space-y-5">
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">AI Model</Label>
                     <Select
                       value={settings.aiModel}
                       onValueChange={(value) => handleSettingChange('aiModel', value)}
                     >
-                      <SelectTrigger className="h-9">
+                      <SelectTrigger className="h-10">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -240,14 +240,14 @@ export default function SettingsPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label className="text-sm">Response</Label>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">Response Length</Label>
                       <Select
                         value={settings.responseLength}
                         onValueChange={(value) => handleSettingChange('responseLength', value)}
                       >
-                        <SelectTrigger className="h-9">
+                        <SelectTrigger className="h-10">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -257,40 +257,42 @@ export default function SettingsPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm">Creativity: {settings.temperature}</Label>
-                      <Slider
-                        value={[settings.temperature]}
-                        onValueChange={(value) => handleSettingChange('temperature', value[0])}
-                        max={1}
-                        min={0}
-                        step={0.1}
-                        className="w-full"
-                      />
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">Creativity: {settings.temperature}</Label>
+                      <div className="pt-2">
+                        <Slider
+                          value={[settings.temperature]}
+                          onValueChange={(value) => handleSettingChange('temperature', value[0])}
+                          max={1}
+                          min={0}
+                          step={0.1}
+                          className="w-full"
+                        />
+                      </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </LiquidGlass>
 
-            {/* Appearance */}
+            {/* Appearance & Interface - Right */}
             <LiquidGlass>
               <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-lg">
-                    <Palette className="mr-2 text-denyse-turquoise w-5 h-5" />
-                    Appearance
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-xl">
+                    <Palette className="mr-3 text-denyse-turquoise w-6 h-6" />
+                    Appearance & Interface
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label className="text-sm">Theme</Label>
+                <CardContent className="space-y-5">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">Theme</Label>
                       <Select
                         value={settings.theme}
                         onValueChange={(value) => handleSettingChange('theme', value)}
                       >
-                        <SelectTrigger className="h-9">
+                        <SelectTrigger className="h-10">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -315,13 +317,13 @@ export default function SettingsPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm">Language</Label>
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">Language</Label>
                       <Select
                         value={settings.language}
                         onValueChange={(value) => handleSettingChange('language', value)}
                       >
-                        <SelectTrigger className="h-9">
+                        <SelectTrigger className="h-10">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -333,16 +335,16 @@ export default function SettingsPage() {
                       </Select>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-6">
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm">Sound</Label>
+                      <Label className="text-sm font-medium">Sound Effects</Label>
                       <Switch
                         checked={settings.soundEnabled}
                         onCheckedChange={(checked) => handleSettingChange('soundEnabled', checked)}
                       />
                     </div>
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm">Voice</Label>
+                      <Label className="text-sm font-medium">Voice Input</Label>
                       <Switch
                         checked={settings.voiceEnabled}
                         onCheckedChange={(checked) => handleSettingChange('voiceEnabled', checked)}
@@ -354,28 +356,28 @@ export default function SettingsPage() {
             </LiquidGlass>
           </div>
 
-          {/* Privacy & Account */}
-          <div className="space-y-6">
-            {/* Privacy & Security */}
+          {/* Middle Row - Privacy & Account */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Privacy & Security - Left */}
             <LiquidGlass>
               <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-lg">
-                    <Shield className="mr-2 text-denyse-turquoise w-5 h-5" />
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-xl">
+                    <Shield className="mr-3 text-denyse-turquoise w-6 h-6" />
                     Privacy & Security
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
+                <CardContent className="space-y-5">
+                  <div className="grid grid-cols-2 gap-6">
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm">Privacy Mode</Label>
+                      <Label className="text-sm font-medium">Privacy Mode</Label>
                       <Switch
                         checked={settings.privacyMode}
                         onCheckedChange={(checked) => handleSettingChange('privacyMode', checked)}
                       />
                     </div>
                     <div className="flex items-center justify-between">
-                      <Label className="text-sm">Auto-save</Label>
+                      <Label className="text-sm font-medium">Auto-save Chats</Label>
                       <Switch
                         checked={settings.autoSave}
                         onCheckedChange={(checked) => handleSettingChange('autoSave', checked)}
@@ -383,14 +385,14 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <Label className="text-sm">Notifications</Label>
+                    <Label className="text-sm font-medium">Notifications</Label>
                     <Switch
                       checked={settings.notifications}
                       onCheckedChange={(checked) => handleSettingChange('notifications', checked)}
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm">Data Retention: {settings.dataRetention} days</Label>
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Data Retention: {settings.dataRetention} days</Label>
                     <Slider
                       value={[settings.dataRetention]}
                       onValueChange={(value) => handleSettingChange('dataRetention', value[0])}
@@ -400,34 +402,34 @@ export default function SettingsPage() {
                       className="w-full"
                     />
                     <div className="flex justify-between text-xs text-denyse-black/60 dark:text-white/60">
-                      <span>1d</span>
-                      <span>6m</span>
-                      <span>1y</span>
+                      <span>1 day</span>
+                      <span>6 months</span>
+                      <span>1 year</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </LiquidGlass>
 
-            {/* Profile & Account */}
+            {/* Profile & Account - Right */}
             <LiquidGlass>
               <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-lg">
-                    <User className="mr-2 text-denyse-turquoise w-5 h-5" />
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-xl">
+                    <User className="mr-3 text-denyse-turquoise w-6 h-6" />
                     Profile & Account
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm">Username</Label>
-                    <div className="p-2 bg-denyse-grey/20 dark:bg-slate-800 rounded text-sm">
+                <CardContent className="space-y-5">
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Username</Label>
+                    <div className="p-3 bg-denyse-grey/20 dark:bg-slate-800 rounded-md text-sm">
                       {user?.username}
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm">Account Type</Label>
-                    <Badge variant="secondary">Organization</Badge>
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Account Type</Label>
+                    <Badge variant="secondary" className="text-sm">Organization</Badge>
                   </div>
                   <Button 
                     variant="outline" 
@@ -441,14 +443,14 @@ export default function SettingsPage() {
             </LiquidGlass>
           </div>
 
-          {/* Data & System */}
-          <div className="space-y-6">
+          {/* Bottom Row - Data & System */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Knowledge Base */}
             <LiquidGlass>
               <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-lg">
-                    <BookOpen className="mr-2 text-denyse-turquoise w-5 h-5" />
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-xl">
+                    <BookOpen className="mr-3 text-denyse-turquoise w-6 h-6" />
                     Knowledge Base
                   </CardTitle>
                 </CardHeader>
@@ -457,14 +459,14 @@ export default function SettingsPage() {
                   {stats && (
                     <div className="grid grid-cols-2 gap-3">
                       <div className="bg-denyse-grey/20 dark:bg-slate-800 rounded-lg p-3">
-                        <div className="text-lg font-bold text-denyse-turquoise">{stats.totalEntries}</div>
-                        <div className="text-xs text-denyse-black/70 dark:text-white/70">Entries</div>
+                        <div className="text-xl font-bold text-denyse-turquoise">{stats.totalEntries}</div>
+                        <div className="text-xs text-denyse-black/70 dark:text-white/70">Documents</div>
                       </div>
                       <div className="bg-denyse-grey/20 dark:bg-slate-800 rounded-lg p-3">
-                        <div className="text-lg font-bold text-denyse-turquoise">
+                        <div className="text-xl font-bold text-denyse-turquoise">
                           {Math.round(stats.totalSize / 1024)}KB
                         </div>
-                        <div className="text-xs text-denyse-black/70 dark:text-white/70">Size</div>
+                        <div className="text-xs text-denyse-black/70 dark:text-white/70">Total Size</div>
                       </div>
                     </div>
                   )}
@@ -499,7 +501,7 @@ export default function SettingsPage() {
                             disabled={deleteMutation.isPending}
                             className="text-red-600 hover:text-red-700 p-1"
                           >
-                            <Trash2 className="w-3 h-3" />
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       ))}
@@ -520,48 +522,53 @@ export default function SettingsPage() {
             {/* Database Status */}
             <LiquidGlass>
               <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-lg">
-                    <Database className="mr-2 text-denyse-turquoise w-5 h-5" />
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-xl">
+                    <Database className="mr-3 text-denyse-turquoise w-6 h-6" />
                     Database Status
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {dbStatusLoading ? (
-                    <div className="flex items-center space-x-2">
-                      <Loader2 className="w-4 h-4 animate-spin text-denyse-turquoise" />
-                      <span className="text-sm text-denyse-black/70 dark:text-white/70">Checking...</span>
+                    <div className="flex items-center space-x-3">
+                      <Loader2 className="w-5 h-5 animate-spin text-denyse-turquoise" />
+                      <span className="text-sm text-denyse-black/70 dark:text-white/70">Checking database...</span>
                     </div>
                   ) : dbStatus ? (
-                    <div className="space-y-3">
-                      <div className="flex items-center space-x-2">
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-3">
                         {dbStatus.healthy ? (
-                          <CheckCircle className="w-4 h-4 text-green-600" />
+                          <CheckCircle className="w-5 h-5 text-green-600" />
                         ) : (
-                          <XCircle className="w-4 h-4 text-red-600" />
+                          <XCircle className="w-5 h-5 text-red-600" />
                         )}
-                        <div className="text-sm font-medium text-denyse-black dark:text-white">
-                          {dbStatus.healthy ? 'Connected' : 'Error'}
+                        <div>
+                          <div className="font-medium text-denyse-black dark:text-white">
+                            {dbStatus.healthy ? 'Database Connected' : 'Connection Error'}
+                          </div>
+                          <div className="text-sm text-denyse-black/70 dark:text-white/70">
+                            Last checked: {new Date(dbStatus.lastChecked).toLocaleTimeString()}
+                          </div>
                         </div>
                       </div>
                       
                       {dbStatus.healthy && dbStatus.stats && (
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="bg-denyse-grey/20 dark:bg-slate-800 rounded p-2">
-                            <div className="text-sm font-bold text-denyse-turquoise">{dbStatus.stats.users}</div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="bg-denyse-grey/20 dark:bg-slate-800 rounded-lg p-3">
+                            <div className="text-xl font-bold text-denyse-turquoise">{dbStatus.stats.users}</div>
                             <div className="text-xs text-denyse-black/70 dark:text-white/70">Users</div>
                           </div>
-                          <div className="bg-denyse-grey/20 dark:bg-slate-800 rounded p-2">
-                            <div className="text-sm font-bold text-denyse-turquoise">{dbStatus.stats.chats}</div>
+                          <div className="bg-denyse-grey/20 dark:bg-slate-800 rounded-lg p-3">
+                            <div className="text-xl font-bold text-denyse-turquoise">{dbStatus.stats.chats}</div>
                             <div className="text-xs text-denyse-black/70 dark:text-white/70">Chats</div>
                           </div>
                         </div>
                       )}
                     </div>
                   ) : (
-                    <div className="flex items-center space-x-2">
-                      <XCircle className="w-4 h-4 text-red-600" />
-                      <span className="text-sm text-denyse-black/70 dark:text-white/70">Unable to check</span>
+                    <div className="flex items-center space-x-3">
+                      <XCircle className="w-5 h-5 text-red-600" />
+                      <span className="text-sm text-denyse-black/70 dark:text-white/70">Unable to check database</span>
                     </div>
                   )}
                 </CardContent>
@@ -571,42 +578,39 @@ export default function SettingsPage() {
             {/* Settings Management */}
             <LiquidGlass>
               <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-lg">
-                    <SettingsIcon className="mr-2 text-denyse-turquoise w-5 h-5" />
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-xl">
+                    <SettingsIcon className="mr-3 text-denyse-turquoise w-6 h-6" />
                     Settings Management
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="grid grid-cols-2 gap-2">
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 gap-3">
                     <Button
                       variant="outline"
-                      size="sm"
-                      className="w-full"
+                      className="w-full flex items-center justify-center"
                       onClick={exportSettings}
                     >
-                      <Download className="mr-1 w-3 h-3" />
-                      Export
+                      <Download className="mr-2 w-4 h-4" />
+                      Export Settings
                     </Button>
                     <Button
                       variant="outline"
-                      size="sm"
-                      className="w-full"
+                      className="w-full flex items-center justify-center"
                       onClick={() => document.getElementById('import-settings')?.click()}
                     >
-                      <Upload className="mr-1 w-3 h-3" />
-                      Import
+                      <Upload className="mr-2 w-4 h-4" />
+                      Import Settings
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="w-full flex items-center justify-center text-red-600 hover:text-red-700"
+                      onClick={handleResetSettings}
+                    >
+                      <Trash2 className="mr-2 w-4 h-4" />
+                      Reset All Settings
                     </Button>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-red-600 hover:text-red-700"
-                    onClick={handleResetSettings}
-                  >
-                    <Trash2 className="mr-1 w-3 h-3" />
-                    Reset All
-                  </Button>
                   <input
                     id="import-settings"
                     type="file"
