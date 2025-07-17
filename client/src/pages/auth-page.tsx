@@ -335,7 +335,7 @@ export default function AuthPage() {
             </h2>
             
             <p className="text-xl text-slate-300 mb-8 leading-relaxed">
-              Harness the power of AI to analyze documents, generate reports, and access BPN's knowledge base with unprecedented efficiency.
+              Harness the power of AI to analyze documents, generate reports, and access your organization's knowledge base with unprecedented efficiency.
             </p>
 
             <div className="space-y-6">

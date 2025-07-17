@@ -220,7 +220,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     Meet Denyse, your personal AI assistant
                   </h2>
                   <p className="text-foreground/70 max-w-2xl mx-auto">
-                    I can help you analyze documents, extract information, generate reports, and answer questions using data from your uploaded files and BPN's knowledge base.
+                    I can help you analyze documents, extract information, generate reports, and answer questions using data from your uploaded files and your organization's knowledge base.
                   </p>
                 </div>
 
