@@ -1,4 +1,4 @@
-import { users, chats, messages, documents, bpnKnowledge, knowledgeBase, type User, type InsertUser, type Chat, type InsertChat, type Message, type InsertMessage, type Document, type InsertDocument, type BpnKnowledge, type KnowledgeBase, type InsertKnowledgeBase } from "@shared/schema";
+import { users, chats, messages, documents, denyseKnowledge, knowledgeBase, type User, type InsertUser, type Chat, type InsertChat, type Message, type InsertMessage, type Document, type InsertDocument, type DenyseKnowledge, type KnowledgeBase, type InsertKnowledgeBase } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, lt } from "drizzle-orm";
 import session from "express-session";
@@ -33,10 +33,10 @@ export interface IStorage {
   deleteExpiredDocuments(): Promise<void>;
   deleteDocument(id: number): Promise<void>;
   
-  // BPN Knowledge management
-  getBpnKnowledge(): Promise<BpnKnowledge[]>;
-  upsertBpnKnowledge(url: string, title: string, content: string): Promise<void>;
-  updateBpnKnowledgeEmbedding(id: number, embedding: string): Promise<void>;
+  // Denyse Knowledge management
+  getDenyseKnowledge(): Promise<DenyseKnowledge[]>;
+  upsertDenyseKnowledge(url: string, title: string, content: string): Promise<void>;
+  updateDenyseKnowledgeEmbedding(id: number, embedding: string): Promise<void>;
   
   // Knowledge base management
   createKnowledgeBase(knowledgeBase: InsertKnowledgeBase): Promise<KnowledgeBase>;
@@ -151,19 +151,19 @@ export class DatabaseStorage implements IStorage {
     await db.delete(documents).where(eq(documents.id, id));
   }
 
-  // BPN Knowledge management
-  async getBpnKnowledge(): Promise<BpnKnowledge[]> {
-    return await db.select().from(bpnKnowledge).orderBy(desc(bpnKnowledge.lastScraped));
+  // Denyse Knowledge management
+  async getDenyseKnowledge(): Promise<DenyseKnowledge[]> {
+    return await db.select().from(denyseKnowledge).orderBy(desc(denyseKnowledge.lastScraped));
   }
 
-  async upsertBpnKnowledge(url: string, title: string, content: string): Promise<void> {
-    await db.insert(bpnKnowledge).values({
+  async upsertDenyseKnowledge(url: string, title: string, content: string): Promise<void> {
+    await db.insert(denyseKnowledge).values({
       url,
       title,
       content,
       lastScraped: new Date(),
     }).onConflictDoUpdate({
-      target: bpnKnowledge.url,
+      target: denyseKnowledge.url,
       set: {
         title,
         content,
@@ -172,8 +172,8 @@ export class DatabaseStorage implements IStorage {
     });
   }
 
-  async updateBpnKnowledgeEmbedding(id: number, embedding: string): Promise<void> {
-    await db.update(bpnKnowledge).set({ embedding }).where(eq(bpnKnowledge.id, id));
+  async updateDenyseKnowledgeEmbedding(id: number, embedding: string): Promise<void> {
+    await db.update(denyseKnowledge).set({ embedding }).where(eq(denyseKnowledge.id, id));
   }
 
   // Knowledge base management

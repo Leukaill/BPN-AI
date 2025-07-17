@@ -61,6 +61,14 @@ export default {
           border: "var(--sidebar-border)",
           ring: "var(--sidebar-ring)",
         },
+        denyse: {
+          turquoise: "var(--denyse-turquoise)",
+          green: "var(--denyse-green)",
+          grey: "var(--denyse-grey)",
+          white: "var(--denyse-white)",
+          black: "var(--denyse-black)",
+          blue: "var(--denyse-blue)",
+        },
       },
       keyframes: {
         "accordion-down": {

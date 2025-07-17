@@ -24,13 +24,13 @@
   --ring: hsl(193, 100%, 28%);
   --radius: 0.5rem;
   
-  /* BPN Brand Colors */
-  --bpn-turquoise: hsl(193, 100%, 28%);
-  --bpn-green: hsl(76, 42%, 70%);
-  --bpn-grey: hsl(0, 0%, 89%);
-  --bpn-white: hsl(0, 0%, 100%);
-  --bpn-black: hsl(0, 0%, 0%);
-  --bpn-blue: hsl(215, 100%, 50%); /* Blue color from shared file */
+  /* Denyse Brand Colors */
+  --denyse-turquoise: hsl(193, 100%, 28%);
+  --denyse-green: hsl(76, 42%, 70%);
+  --denyse-grey: hsl(0, 0%, 89%);
+  --denyse-white: hsl(0, 0%, 100%);
+  --denyse-black: hsl(0, 0%, 0%);
+  --denyse-blue: hsl(215, 100%, 50%); /* Blue color from shared file */
 }
 
 .dark {

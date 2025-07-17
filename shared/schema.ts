@@ -41,7 +41,7 @@ export const documents = pgTable("documents", {
   expiresAt: timestamp("expires_at").notNull(), // 48 hours from creation
 });
 
-export const bpnKnowledge = pgTable("bpn_knowledge", {
+export const denyseKnowledge = pgTable("denyse_knowledge", {
   id: serial("id").primaryKey(),
   url: text("url").notNull().unique(),
   title: text("title").notNull(),
@@ -128,6 +128,6 @@ export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
 export type Document = typeof documents.$inferSelect;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
-export type BpnKnowledge = typeof bpnKnowledge.$inferSelect;
+export type DenyseKnowledge = typeof denyseKnowledge.$inferSelect;
 export type KnowledgeBase = typeof knowledgeBase.$inferSelect;
 export type InsertKnowledgeBase = z.infer<typeof insertKnowledgeBaseSchema>;

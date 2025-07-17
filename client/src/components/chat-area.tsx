@@ -173,13 +173,13 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
   return (
     <div className="flex-1 flex flex-col relative">
       {/* Liquid Glass Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-bpn-white/90 to-bpn-grey/30 backdrop-blur-sm"></div>
+      <div className="absolute inset-0 bg-gradient-to-r from-denyse-white/90 to-denyse-grey/30 backdrop-blur-sm"></div>
       
       {/* Chat Header */}
       <div className="relative z-10 liquid-glass-strong border-b border-white/10 p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="liquid-bubble w-12 h-12 bg-bpn-turquoise rounded-full flex items-center justify-center">
+            <div className="liquid-bubble w-12 h-12 bg-denyse-turquoise rounded-full flex items-center justify-center">
               <Bot className="text-white text-xl" />
             </div>
             <div>
@@ -190,7 +190,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
           <div className="flex items-center space-x-3">
             <LiquidGlass className="rounded-full px-4 py-2 animate-morphing">
               <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-bpn-green rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-denyse-green rounded-full animate-pulse"></div>
                 <span className="text-sm text-foreground font-medium">Online</span>
               </div>
             </LiquidGlass>
@@ -199,7 +199,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
               size="sm"
               className="liquid-glass rounded-full p-2 hover:bg-white/40 transition-all duration-300 ripple-effect"
             >
-              <MoreVertical className="text-bpn-turquoise" />
+              <MoreVertical className="text-denyse-turquoise" />
             </Button>
           </div>
         </div>
@@ -213,7 +213,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
               <div className="max-w-4xl mx-auto">
                 {/* Welcome Message */}
                 <div className="text-center py-12">
-                  <div className="liquid-bubble w-24 h-24 bg-gradient-to-br from-bpn-turquoise to-bpn-green rounded-full mx-auto mb-6 flex items-center justify-center">
+                  <div className="liquid-bubble w-24 h-24 bg-gradient-to-br from-denyse-turquoise to-denyse-green rounded-full mx-auto mb-6 flex items-center justify-center">
                     <Bot className="text-white text-3xl" />
                   </div>
                   <h2 className="text-3xl font-bold text-foreground mb-4">
@@ -228,7 +228,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                   <LiquidGlass className="rounded-xl p-6 hover:bg-white/40 transition-all duration-300 cursor-pointer group animate-morphing">
                     <div className="flex items-start space-x-4">
-                      <Upload className="text-bpn-turquoise text-2xl mt-1" />
+                      <Upload className="text-denyse-turquoise text-2xl mt-1" />
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">Document Analysis</h3>
                         <p className="text-sm text-foreground/70">
@@ -243,7 +243,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     style={{ animationDelay: '0.5s' }}
                   >
                     <div className="flex items-start space-x-4">
-                      <BarChart className="text-bpn-green text-2xl mt-1" />
+                      <BarChart className="text-denyse-green text-2xl mt-1" />
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">Report Generation</h3>
                         <p className="text-sm text-foreground/70">
@@ -258,7 +258,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     style={{ animationDelay: '1s' }}
                   >
                     <div className="flex items-start space-x-4">
-                      <FileText className="text-bpn-turquoise text-2xl mt-1" />
+                      <FileText className="text-denyse-turquoise text-2xl mt-1" />
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">Intelligent Search</h3>
                         <p className="text-sm text-foreground/70">
@@ -273,7 +273,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     style={{ animationDelay: '1.5s' }}
                   >
                     <div className="flex items-start space-x-4">
-                      <Globe className="text-bpn-green text-2xl mt-1" />
+                      <Globe className="text-denyse-green text-2xl mt-1" />
                       <div>
                         <h3 className="font-semibold text-foreground mb-2">BPN Knowledge Base</h3>
                         <p className="text-sm text-foreground/70">
@@ -294,9 +294,9 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     <div className="max-w-xs lg:max-w-2xl">
                       <LiquidGlass className="rounded-xl p-4 animate-pulse">
                         <div className="flex items-center space-x-2">
-                          <div className="w-2 h-2 bg-bpn-turquoise rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-bpn-green rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                          <div className="w-2 h-2 bg-bpn-turquoise rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                          <div className="w-2 h-2 bg-denyse-turquoise rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-denyse-green rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                          <div className="w-2 h-2 bg-denyse-turquoise rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                           <span className="text-sm text-foreground/70 ml-2">AI is thinking...</span>
                         </div>
                       </LiquidGlass>
@@ -323,9 +323,9 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                 <div className="relative">
                   {/* File Upload Indicator */}
                   {uploadedDocument && (
-                    <div className="mb-2 p-2 bg-bpn-turquoise/10 border border-bpn-turquoise/20 rounded-lg">
+                    <div className="mb-2 p-2 bg-denyse-turquoise/10 border border-denyse-turquoise/20 rounded-lg">
                       <div className="flex items-center space-x-2">
-                        <FileText className="w-4 h-4 text-bpn-turquoise" />
+                        <FileText className="w-4 h-4 text-denyse-turquoise" />
                         <span className="text-sm text-foreground font-medium">
                           {uploadedDocument.originalName}
                         </span>
@@ -370,7 +370,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
               <Button
                 onClick={handleSendMessage}
                 disabled={!message.trim() || sendMessageMutation.isPending}
-                className="bg-bpn-turquoise text-white hover:bg-bpn-turquoise/80 transition-all duration-300 ripple-effect disabled:opacity-50"
+                className="bg-denyse-turquoise text-white hover:bg-denyse-turquoise/80 transition-all duration-300 ripple-effect disabled:opacity-50"
               >
                 <Send className="group-hover:translate-x-1 transition-transform duration-300" />
               </Button>
@@ -381,8 +381,8 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
           <div className="mt-4 text-center">
             <p className="text-xs text-foreground/50">
               Denyse can make mistakes, so double-check important information. 
-              <a href="#" className="text-bpn-turquoise hover:underline ml-1">Privacy Policy</a> | 
-              <a href="#" className="text-bpn-turquoise hover:underline ml-1">Terms of Service</a>
+              <a href="#" className="text-denyse-turquoise hover:underline ml-1">Privacy Policy</a> | 
+              <a href="#" className="text-denyse-turquoise hover:underline ml-1">Terms of Service</a>
             </p>
           </div>
         </div>

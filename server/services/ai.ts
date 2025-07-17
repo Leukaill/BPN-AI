@@ -527,8 +527,8 @@ Your file has been generated and is ready for download. The download link will e
       }
 
       // Get BPN knowledge
-      const bpnKnowledge = await storage.getBpnKnowledge();
-      console.log(`BPN knowledge entries: ${bpnKnowledge.length}`);
+      const denyseKnowledge = await storage.getDenyseKnowledge();
+      console.log(`Denyse knowledge entries: ${denyseKnowledge.length}`);
 
       // Build contextual prompt (simplified for faster responses)
       const contextualPrompt = `You are Denyse, an M&E specialist. Answer briefly in 1-2 sentences: ${prompt}`;
@@ -599,13 +599,13 @@ Your file has been generated and is ready for download. The download link will e
   async debugKnowledgeAccess(userId: number): Promise<any> {
     try {
       const userKnowledge = await storage.getUserKnowledgeBase(userId);
-      const bpnKnowledge = await storage.getBpnKnowledge();
+      const denyseKnowledge = await storage.getDenyseKnowledge();
       
       return {
         userKnowledgeCount: userKnowledge.length,
-        bpnKnowledgeCount: bpnKnowledge.length,
+        denyseKnowledgeCount: denyseKnowledge.length,
         userKnowledgeTitles: userKnowledge.map(k => k.title),
-        bpnKnowledgeTitles: bpnKnowledge.map(k => k.title)
+        denyseKnowledgeTitles: denyseKnowledge.map(k => k.title)
       };
     } catch (error) {
       console.error("Error debugging knowledge access:", error);

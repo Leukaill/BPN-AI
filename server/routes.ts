@@ -517,18 +517,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }),
   );
 
-  // BPN KNOWLEDGE ROUTES
+  // DENYSE KNOWLEDGE ROUTES
   app.get(
-    "/api/bpn-knowledge",
+    "/api/denyse-knowledge",
     requireAuth,
     asyncHandler(async (req: any, res: Response) => {
-      const knowledge = await storage.getBpnKnowledge();
+      const knowledge = await storage.getDenyseKnowledge();
       res.json(knowledge);
     }),
   );
 
   app.post(
-    "/api/bpn-knowledge/scrape",
+    "/api/denyse-knowledge/scrape",
     requireAuth,
     asyncHandler(async (req: any, res: Response) => {
       // Add timeout for web scraping

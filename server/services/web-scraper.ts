@@ -60,7 +60,7 @@ class WebScraper {
     try {
       const response = await fetch(url, {
         headers: {
-          "User-Agent": "Mozilla/5.0 (compatible; BPN-AI-Bot/1.0)",
+          "User-Agent": "Mozilla/5.0 (compatible; Denyse-AI-Bot/1.0)",
         },
       });
 
@@ -72,7 +72,7 @@ class WebScraper {
       const $ = cheerio.load(html);
 
       // Extract title
-      const title = $("title").text() || $("h1").first().text() || "BPN Page";
+      const title = $("title").text() || $("h1").first().text() || "Denyse Page";
 
       // Extract main content
       let content = "";
@@ -103,17 +103,17 @@ class WebScraper {
         .trim();
 
       if (content.length > 100) { // Only store if we have meaningful content
-        await storage.upsertBpnKnowledge(url, title, content);
+        await storage.upsertDenyseKnowledge(url, title, content);
         
         // Generate embedding for the content
         const embedding = await aiService.generateEmbedding(content);
         
         // Get the stored knowledge to update embedding
-        const knowledgeItems = await storage.getBpnKnowledge();
+        const knowledgeItems = await storage.getDenyseKnowledge();
         const currentItem = knowledgeItems.find(item => item.url === url);
         
         if (currentItem) {
-          await storage.updateBpnKnowledgeEmbedding(currentItem.id, JSON.stringify(embedding));
+          await storage.updateDenyseKnowledgeEmbedding(currentItem.id, JSON.stringify(embedding));
         }
       }
 
@@ -130,7 +130,7 @@ class WebScraper {
 
   async searchKnowledge(query: string): Promise<any[]> {
     try {
-      const knowledgeItems = await storage.getBpnKnowledge();
+      const knowledgeItems = await storage.getDenyseKnowledge();
       const queryEmbedding = await aiService.generateEmbedding(query);
       
       // Simple similarity search

@@ -165,7 +165,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       <div className={`max-w-xs lg:max-w-3xl ${isUser ? 'order-2' : 'order-1'}`}>
         <div className="flex items-start space-x-3 mb-2">
           {!isUser && (
-            <div className="w-8 h-8 bg-bpn-turquoise rounded-full flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 bg-denyse-turquoise rounded-full flex items-center justify-center flex-shrink-0">
               <Bot className="w-4 h-4 text-white" />
             </div>
           )}
@@ -180,7 +180,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             </div>
           </div>
           {isUser && (
-            <div className="w-8 h-8 bg-bpn-green rounded-full flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 bg-denyse-green rounded-full flex items-center justify-center flex-shrink-0">
               <User className="w-4 h-4 text-white" />
             </div>
           )}
@@ -189,7 +189,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         <LiquidGlass
           className={`p-6 rounded-xl shadow-lg ${
             isUser 
-              ? "bg-bpn-turquoise/90 text-white ml-12" 
+              ? "bg-denyse-turquoise/90 text-white ml-12" 
               : "bg-white/95 dark:bg-gray-800/95 text-gray-900 dark:text-white mr-12"
           }`}
         >

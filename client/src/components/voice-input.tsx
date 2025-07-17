@@ -119,7 +119,7 @@ export function VoiceInput({ onTranscript }: VoiceInputProps) {
         {isRecording ? (
           <Square className="text-red-500 group-hover:scale-110 transition-transform duration-300" />
         ) : (
-          <Mic className="text-bpn-green group-hover:scale-110 transition-transform duration-300" />
+          <Mic className="text-denyse-green group-hover:scale-110 transition-transform duration-300" />
         )}
       </Button>
     </div>

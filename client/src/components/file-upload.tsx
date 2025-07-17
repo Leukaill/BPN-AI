@@ -92,13 +92,13 @@ export function FileUpload({ onFileUpload, disabled }: FileUploadProps) {
         onClick={handleClick}
         disabled={disabled}
         className={`liquid-glass rounded-xl p-3 hover:bg-white/40 transition-all duration-300 ripple-effect group ${
-          isDragging ? "bg-bpn-turquoise/20" : ""
+          isDragging ? "bg-denyse-turquoise/20" : ""
         }`}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        <Paperclip className="text-bpn-turquoise group-hover:rotate-45 transition-transform duration-300" />
+        <Paperclip className="text-denyse-turquoise group-hover:rotate-45 transition-transform duration-300" />
       </Button>
     </div>
   );

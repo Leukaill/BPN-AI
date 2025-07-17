@@ -1,8 +1,8 @@
-# Denyse - BPN AI Assistant
+# Denyse AI Assistant
 
 ## Overview
 
-This is a modern, luxurious AI chatbot application built for internal use at BPN organization. The application features a Gemini-inspired interface with BPN brand colors, document upload capabilities, and AI-powered chat functionality. Denyse is designed to be a secure, premium AI assistant that can process documents, answer questions, and help with report writing.
+This is a modern, luxurious AI chatbot application built for intelligent document processing and report generation. The application features a Gemini-inspired interface with elegant brand colors, document upload capabilities, and AI-powered chat functionality. Denyse is designed to be a secure, premium AI assistant that can process documents, answer questions, and help with report writing.
 
 ## User Preferences
 
@@ -54,10 +54,10 @@ Key entities include:
 - **Chats** - Chat sessions with titles and metadata
 - **Messages** - Individual chat messages with role (user/assistant)
 - **Documents** - Uploaded files with text extraction and embeddings
-- **BPN Knowledge** - Scraped website content from bpn.rw
+- **Denyse Knowledge** - Scraped website content and knowledge base
 
 ### UI/UX Design
-- **BPN Brand Colors**: Turquoise (#00728e), Green (#a8cb63), Grey (#e3e3e3)
+- **Denyse Brand Colors**: Turquoise (#00728e), Green (#a8cb63), Grey (#e3e3e3)
 - **Liquid Glass Effects** - Custom glassmorphism components
 - **Google Gemini-inspired Layout** - Left sidebar with main chat area
 - **Responsive Design** - Mobile-first approach
@@ -86,9 +86,9 @@ Key entities include:
 5. Document expires after 48 hours for security
 
 ### Web Scraping Flow
-1. Automated scraping of bpn.rw website
+1. Automated scraping of relevant websites
 2. Content extraction using cheerio
-3. Storage in bpn_knowledge table
+3. Storage in knowledge table
 4. Embedding generation for context retrieval
 
 ## External Dependencies
@@ -166,7 +166,7 @@ Key entities include:
 - **Smart Content Recognition**: Identifies headers, subheadings, numbered sections, and list items
 - **Enhanced Visual Hierarchy**: Improved spacing, font weights, and color coding for different content types
 - **Responsive Design**: Better text layout with proper line spacing and justified text alignment
-- **Professional Styling**: Clean, modern appearance with BPN brand colors and consistent formatting
+- **Professional Styling**: Clean, modern appearance with Denyse brand colors and consistent formatting
 
 ### Downloadable Content Generation System ✅
 - **Automatic Download Detection**: AI recognizes when users request downloadable files
@@ -174,7 +174,7 @@ Key entities include:
 - **Smart Filename Generation**: Automatically extracts meaningful filenames from user requests
 - **Secure Download Links**: Temporary download URLs with 1-hour expiration for security
 - **Interactive Download Components**: Beautiful download buttons with progress indicators and file information
-- **Professional File Formatting**: Generated files include proper headers, timestamps, and BPN branding
+- **Professional File Formatting**: Generated files include proper headers, timestamps, and Denyse branding
 
 ### Recent Changes (January 2025)
 

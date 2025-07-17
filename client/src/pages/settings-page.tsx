@@ -184,7 +184,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-bpn-grey via-white to-bpn-green/10 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-denyse-grey via-white to-denyse-green/10 p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
@@ -197,12 +197,12 @@ export default function SettingsPage() {
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <h1 className="text-3xl font-bold text-bpn-black flex items-center">
-              <SettingsIcon className="text-bpn-turquoise mr-3" />
+            <h1 className="text-3xl font-bold text-denyse-black flex items-center">
+              <SettingsIcon className="text-denyse-turquoise mr-3" />
               Settings
             </h1>
           </div>
-          <Badge variant="outline" className="text-bpn-turquoise">
+          <Badge variant="outline" className="text-denyse-turquoise">
             {user?.username}
           </Badge>
         </div>
@@ -212,8 +212,8 @@ export default function SettingsPage() {
           <LiquidGlass className="lg:col-span-1">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center text-bpn-black">
-                  <User className="mr-2 text-bpn-turquoise" />
+                <CardTitle className="flex items-center text-denyse-black">
+                  <User className="mr-2 text-denyse-turquoise" />
                   Profile
                 </CardTitle>
                 <CardDescription>Manage your account settings</CardDescription>
@@ -221,7 +221,7 @@ export default function SettingsPage() {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Username</Label>
-                  <div className="p-2 bg-bpn-grey/20 rounded text-sm">
+                  <div className="p-2 bg-denyse-grey/20 rounded text-sm">
                     {user?.username}
                   </div>
                 </div>
@@ -246,8 +246,8 @@ export default function SettingsPage() {
             <LiquidGlass>
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center text-bpn-black">
-                    <Brain className="mr-2 text-bpn-turquoise" />
+                  <CardTitle className="flex items-center text-denyse-black">
+                    <Brain className="mr-2 text-denyse-turquoise" />
                     AI Assistant
                   </CardTitle>
                   <CardDescription>Configure AI behavior and responses</CardDescription>
@@ -298,7 +298,7 @@ export default function SettingsPage() {
                       step={0.1}
                       className="w-full"
                     />
-                    <div className="flex justify-between text-xs text-bpn-black/60">
+                    <div className="flex justify-between text-xs text-denyse-black/60">
                       <span>Conservative</span>
                       <span>Balanced</span>
                       <span>Creative</span>
@@ -312,8 +312,8 @@ export default function SettingsPage() {
             <LiquidGlass>
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center text-bpn-black">
-                    <Palette className="mr-2 text-bpn-turquoise" />
+                  <CardTitle className="flex items-center text-denyse-black">
+                    <Palette className="mr-2 text-denyse-turquoise" />
                     Appearance
                   </CardTitle>
                   <CardDescription>Customize the interface appearance</CardDescription>
@@ -377,8 +377,8 @@ export default function SettingsPage() {
             <LiquidGlass>
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center text-bpn-black">
-                    <Volume2 className="mr-2 text-bpn-turquoise" />
+                  <CardTitle className="flex items-center text-denyse-black">
+                    <Volume2 className="mr-2 text-denyse-turquoise" />
                     Audio & Voice
                   </CardTitle>
                   <CardDescription>Configure audio and voice features</CardDescription>
@@ -387,7 +387,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Sound Effects</Label>
-                      <p className="text-sm text-bpn-black/60">Enable UI sound effects</p>
+                      <p className="text-sm text-denyse-black/60">Enable UI sound effects</p>
                     </div>
                     <Switch
                       checked={settings.soundEnabled}
@@ -397,7 +397,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Voice Input</Label>
-                      <p className="text-sm text-bpn-black/60">Enable voice-to-text input</p>
+                      <p className="text-sm text-denyse-black/60">Enable voice-to-text input</p>
                     </div>
                     <Switch
                       checked={settings.voiceEnabled}
@@ -407,7 +407,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Notifications</Label>
-                      <p className="text-sm text-bpn-black/60">Get notified about responses</p>
+                      <p className="text-sm text-denyse-black/60">Get notified about responses</p>
                     </div>
                     <Switch
                       checked={settings.notifications}
@@ -422,8 +422,8 @@ export default function SettingsPage() {
             <LiquidGlass>
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center text-bpn-black">
-                    <Shield className="mr-2 text-bpn-turquoise" />
+                  <CardTitle className="flex items-center text-denyse-black">
+                    <Shield className="mr-2 text-denyse-turquoise" />
                     Privacy & Security
                   </CardTitle>
                   <CardDescription>Manage your data and privacy settings</CardDescription>
@@ -432,7 +432,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Privacy Mode</Label>
-                      <p className="text-sm text-bpn-black/60">Enhanced privacy for sensitive data</p>
+                      <p className="text-sm text-denyse-black/60">Enhanced privacy for sensitive data</p>
                     </div>
                     <Switch
                       checked={settings.privacyMode}
@@ -442,7 +442,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label>Auto-save Chats</Label>
-                      <p className="text-sm text-bpn-black/60">Automatically save chat history</p>
+                      <p className="text-sm text-denyse-black/60">Automatically save chat history</p>
                     </div>
                     <Switch
                       checked={settings.autoSave}
@@ -459,7 +459,7 @@ export default function SettingsPage() {
                       step={1}
                       className="w-full"
                     />
-                    <div className="flex justify-between text-xs text-bpn-black/60">
+                    <div className="flex justify-between text-xs text-denyse-black/60">
                       <span>1 day</span>
                       <span>6 months</span>
                       <span>1 year</span>
@@ -473,8 +473,8 @@ export default function SettingsPage() {
             <LiquidGlass>
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center text-bpn-black">
-                    <BookOpen className="mr-2 text-bpn-turquoise" />
+                  <CardTitle className="flex items-center text-denyse-black">
+                    <BookOpen className="mr-2 text-denyse-turquoise" />
                     Denyse's Knowledge Base
                   </CardTitle>
                   <CardDescription>Train Denyse with your own documents and knowledge</CardDescription>
@@ -483,21 +483,21 @@ export default function SettingsPage() {
                   {/* Knowledge Base Stats */}
                   {stats && (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="bg-bpn-grey/20 rounded-lg p-4">
-                        <div className="text-2xl font-bold text-bpn-turquoise">{stats.totalEntries}</div>
-                        <div className="text-sm text-bpn-black/70">Knowledge Entries</div>
+                      <div className="bg-denyse-grey/20 rounded-lg p-4">
+                        <div className="text-2xl font-bold text-denyse-turquoise">{stats.totalEntries}</div>
+                        <div className="text-sm text-denyse-black/70">Knowledge Entries</div>
                       </div>
-                      <div className="bg-bpn-grey/20 rounded-lg p-4">
-                        <div className="text-2xl font-bold text-bpn-turquoise">
+                      <div className="bg-denyse-grey/20 rounded-lg p-4">
+                        <div className="text-2xl font-bold text-denyse-turquoise">
                           {Math.round(stats.totalSize / 1024)}KB
                         </div>
-                        <div className="text-sm text-bpn-black/70">Total Content</div>
+                        <div className="text-sm text-denyse-black/70">Total Content</div>
                       </div>
-                      <div className="bg-bpn-grey/20 rounded-lg p-4">
-                        <div className="text-2xl font-bold text-bpn-turquoise">
+                      <div className="bg-denyse-grey/20 rounded-lg p-4">
+                        <div className="text-2xl font-bold text-denyse-turquoise">
                           {Object.keys(stats.fileTypes).length}
                         </div>
-                        <div className="text-sm text-bpn-black/70">File Types</div>
+                        <div className="text-sm text-denyse-black/70">File Types</div>
                       </div>
                     </div>
                   )}
@@ -506,8 +506,8 @@ export default function SettingsPage() {
                   <div
                     className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
                       dragActive
-                        ? 'border-bpn-turquoise bg-bpn-turquoise/10'
-                        : 'border-bpn-grey hover:border-bpn-turquoise/50'
+                        ? 'border-denyse-turquoise bg-denyse-turquoise/10'
+                        : 'border-denyse-grey hover:border-denyse-turquoise/50'
                     }`}
                     onDragEnter={handleDrag}
                     onDragLeave={handleDrag}
@@ -515,12 +515,12 @@ export default function SettingsPage() {
                     onDrop={handleDrop}
                   >
                     <div className="space-y-4">
-                      <div className="w-16 h-16 bg-bpn-turquoise rounded-full mx-auto flex items-center justify-center">
+                      <div className="w-16 h-16 bg-denyse-turquoise rounded-full mx-auto flex items-center justify-center">
                         <Upload className="w-8 h-8 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-bpn-black">Import Training Data</h3>
-                        <p className="text-bpn-black/70">
+                        <h3 className="text-lg font-semibold text-denyse-black">Import Training Data</h3>
+                        <p className="text-denyse-black/70">
                           Upload documents to train Denyse with your knowledge
                         </p>
                       </div>
@@ -537,9 +537,9 @@ export default function SettingsPage() {
                           )}
                           Choose File
                         </Button>
-                        <span className="text-sm text-bpn-black/70">or drag and drop</span>
+                        <span className="text-sm text-denyse-black/70">or drag and drop</span>
                       </div>
-                      <p className="text-xs text-bpn-black/50">
+                      <p className="text-xs text-denyse-black/50">
                         Supported: PDF, DOCX, DOC, TXT (max 10MB)
                       </p>
                     </div>
@@ -548,18 +548,18 @@ export default function SettingsPage() {
                   {/* Knowledge Base List */}
                   {knowledge.length > 0 && (
                     <div className="space-y-3">
-                      <h4 className="font-semibold text-bpn-black">Your Knowledge Base</h4>
+                      <h4 className="font-semibold text-denyse-black">Your Knowledge Base</h4>
                       <div className="max-h-64 overflow-y-auto space-y-2">
                         {knowledge.map((entry) => (
                           <div
                             key={entry.id}
-                            className="flex items-center justify-between p-3 bg-bpn-grey/20 rounded-lg"
+                            className="flex items-center justify-between p-3 bg-denyse-grey/20 rounded-lg"
                           >
                             <div className="flex items-center space-x-3">
-                              <FileText className="w-5 h-5 text-bpn-turquoise" />
+                              <FileText className="w-5 h-5 text-denyse-turquoise" />
                               <div>
-                                <div className="font-medium text-bpn-black">{entry.title}</div>
-                                <div className="text-sm text-bpn-black/70">
+                                <div className="font-medium text-denyse-black">{entry.title}</div>
+                                <div className="text-sm text-denyse-black/70">
                                   {entry.filename} • {Math.round(entry.content.length / 1024)}KB
                                 </div>
                               </div>
@@ -594,8 +594,8 @@ export default function SettingsPage() {
             <LiquidGlass>
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center text-bpn-black">
-                    <Database className="mr-2 text-bpn-turquoise" />
+                  <CardTitle className="flex items-center text-denyse-black">
+                    <Database className="mr-2 text-denyse-turquoise" />
                     Database Status
                   </CardTitle>
                   <CardDescription>Monitor your database connection and stats</CardDescription>
@@ -603,8 +603,8 @@ export default function SettingsPage() {
                 <CardContent className="space-y-4">
                   {dbStatusLoading ? (
                     <div className="flex items-center space-x-3">
-                      <Loader2 className="w-5 h-5 animate-spin text-bpn-turquoise" />
-                      <span className="text-bpn-black/70">Checking database status...</span>
+                      <Loader2 className="w-5 h-5 animate-spin text-denyse-turquoise" />
+                      <span className="text-denyse-black/70">Checking database status...</span>
                     </div>
                   ) : dbStatus ? (
                     <div className="space-y-4">
@@ -615,10 +615,10 @@ export default function SettingsPage() {
                           <XCircle className="w-5 h-5 text-red-600" />
                         )}
                         <div>
-                          <div className="font-medium text-bpn-black">
+                          <div className="font-medium text-denyse-black">
                             {dbStatus.healthy ? 'Connected' : 'Connection Error'}
                           </div>
-                          <div className="text-sm text-bpn-black/70">
+                          <div className="text-sm text-denyse-black/70">
                             Last checked: {new Date(dbStatus.lastChecked).toLocaleTimeString()}
                           </div>
                         </div>
@@ -626,17 +626,17 @@ export default function SettingsPage() {
                       
                       {dbStatus.healthy && dbStatus.stats && (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div className="bg-bpn-grey/20 rounded-lg p-3">
-                            <div className="text-xl font-bold text-bpn-turquoise">{dbStatus.stats.users}</div>
-                            <div className="text-sm text-bpn-black/70">Users</div>
+                          <div className="bg-denyse-grey/20 rounded-lg p-3">
+                            <div className="text-xl font-bold text-denyse-turquoise">{dbStatus.stats.users}</div>
+                            <div className="text-sm text-denyse-black/70">Users</div>
                           </div>
-                          <div className="bg-bpn-grey/20 rounded-lg p-3">
-                            <div className="text-xl font-bold text-bpn-turquoise">{dbStatus.stats.chats}</div>
-                            <div className="text-sm text-bpn-black/70">Chats</div>
+                          <div className="bg-denyse-grey/20 rounded-lg p-3">
+                            <div className="text-xl font-bold text-denyse-turquoise">{dbStatus.stats.chats}</div>
+                            <div className="text-sm text-denyse-black/70">Chats</div>
                           </div>
-                          <div className="bg-bpn-grey/20 rounded-lg p-3">
-                            <div className="text-xl font-bold text-bpn-turquoise">{dbStatus.stats.knowledgeBase}</div>
-                            <div className="text-sm text-bpn-black/70">Knowledge Entries</div>
+                          <div className="bg-denyse-grey/20 rounded-lg p-3">
+                            <div className="text-xl font-bold text-denyse-turquoise">{dbStatus.stats.knowledgeBase}</div>
+                            <div className="text-sm text-denyse-black/70">Knowledge Entries</div>
                           </div>
                         </div>
                       )}
@@ -653,7 +653,7 @@ export default function SettingsPage() {
                   ) : (
                     <div className="flex items-center space-x-3">
                       <XCircle className="w-5 h-5 text-red-600" />
-                      <span className="text-bpn-black/70">Unable to check database status</span>
+                      <span className="text-denyse-black/70">Unable to check database status</span>
                     </div>
                   )}
                 </CardContent>
@@ -664,8 +664,8 @@ export default function SettingsPage() {
             <LiquidGlass>
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center text-bpn-black">
-                    <SettingsIcon className="mr-2 text-bpn-turquoise" />
+                  <CardTitle className="flex items-center text-denyse-black">
+                    <SettingsIcon className="mr-2 text-denyse-turquoise" />
                     Settings Management
                   </CardTitle>
                   <CardDescription>Export, import, and reset your settings</CardDescription>
