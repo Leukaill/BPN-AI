@@ -125,8 +125,8 @@ export function Sidebar({ currentChatId, onChatSelect, onNewChat }: SidebarProps
             
             {chats.length === 0 ? (
               <div className="text-center py-8">
-                <p className="text-sm text-denyse-black/70 dark:text-white/70">No chats yet</p>
-                <p className="text-xs text-denyse-black/50 dark:text-white/50 mt-1">Start a new conversation to see it here</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">No chats yet</p>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">Start a new conversation to see it here</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -153,7 +153,7 @@ export function Sidebar({ currentChatId, onChatSelect, onNewChat }: SidebarProps
                         <p className="text-sm font-medium text-denyse-black dark:text-white truncate">
                           {chat.title}
                         </p>
-                        <p className="text-xs text-denyse-black/70 dark:text-white/70 mt-1">
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                           {formatChatDate(chat.updatedAt)}
                         </p>
                       </div>
@@ -183,7 +183,7 @@ export function Sidebar({ currentChatId, onChatSelect, onNewChat }: SidebarProps
             className="w-full liquid-glass rounded-lg p-3 text-left hover:bg-white/30 transition-all duration-300 group justify-start"
           >
             <Settings className="text-denyse-turquoise mr-3" />
-            <span className="text-sm font-medium text-denyse-black">Settings</span>
+            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Settings</span>
           </Button>
           
           <Button
@@ -191,7 +191,7 @@ export function Sidebar({ currentChatId, onChatSelect, onNewChat }: SidebarProps
             className="w-full liquid-glass rounded-lg p-3 text-left hover:bg-white/30 transition-all duration-300 group justify-start"
           >
             <HelpCircle className="text-denyse-green mr-3" />
-            <span className="text-sm font-medium text-denyse-black">Help</span>
+            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Help</span>
           </Button>
           
           <Button
@@ -199,7 +199,7 @@ export function Sidebar({ currentChatId, onChatSelect, onNewChat }: SidebarProps
             onClick={() => logoutMutation.mutate()}
             className="w-full liquid-glass rounded-lg p-3 text-left hover:bg-white/30 transition-all duration-300 group justify-start"
           >
-            <span className="text-sm font-medium text-denyse-black">Sign Out</span>
+            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Sign Out</span>
           </Button>
         </div>
         

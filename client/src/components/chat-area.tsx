@@ -216,10 +216,10 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                   <div className="liquid-bubble w-24 h-24 bg-gradient-to-br from-denyse-turquoise to-denyse-green rounded-full mx-auto mb-6 flex items-center justify-center">
                     <Bot className="text-white text-3xl" />
                   </div>
-                  <h2 className="text-3xl font-bold text-foreground mb-4">
+                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
                     Meet Denyse, your personal AI assistant
                   </h2>
-                  <p className="text-foreground/70 max-w-2xl mx-auto">
+                  <p className="text-gray-800 dark:text-gray-200 max-w-2xl mx-auto">
                     I can help you analyze documents, extract information, generate reports, and answer questions using data from your uploaded files and your organization's knowledge base.
                   </p>
                 </div>
@@ -230,8 +230,8 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     <div className="flex items-start space-x-4">
                       <Upload className="text-denyse-turquoise text-2xl mt-1" />
                       <div>
-                        <h3 className="font-semibold text-foreground mb-2">Document Analysis</h3>
-                        <p className="text-sm text-foreground/70">
+                        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Document Analysis</h3>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
                           Upload PDFs, DOCX files and extract key information instantly.
                         </p>
                       </div>
@@ -245,8 +245,8 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     <div className="flex items-start space-x-4">
                       <BarChart className="text-denyse-green text-2xl mt-1" />
                       <div>
-                        <h3 className="font-semibold text-foreground mb-2">Report Generation</h3>
-                        <p className="text-sm text-foreground/70">
+                        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Report Generation</h3>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
                           Create comprehensive reports using data from multiple sources.
                         </p>
                       </div>
@@ -260,8 +260,8 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     <div className="flex items-start space-x-4">
                       <FileText className="text-denyse-turquoise text-2xl mt-1" />
                       <div>
-                        <h3 className="font-semibold text-foreground mb-2">Intelligent Search</h3>
-                        <p className="text-sm text-foreground/70">
+                        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Intelligent Search</h3>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
                           Query information with context and reasoning capabilities.
                         </p>
                       </div>
@@ -275,8 +275,8 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     <div className="flex items-start space-x-4">
                       <Globe className="text-denyse-green text-2xl mt-1" />
                       <div>
-                        <h3 className="font-semibold text-foreground mb-2">Company Knowledge Base</h3>
-                        <p className="text-sm text-foreground/70">
+                        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Company Knowledge Base</h3>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
                           Access information from your company's knowledge base automatically.
                         </p>
                       </div>
@@ -297,7 +297,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                           <div className="w-2 h-2 bg-denyse-turquoise rounded-full animate-bounce"></div>
                           <div className="w-2 h-2 bg-denyse-green rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
                           <div className="w-2 h-2 bg-denyse-turquoise rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                          <span className="text-sm text-foreground/70 ml-2">AI is thinking...</span>
+                          <span className="text-sm text-gray-700 dark:text-gray-300 ml-2">AI is thinking...</span>
                         </div>
                       </LiquidGlass>
                     </div>
