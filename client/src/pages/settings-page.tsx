@@ -1,161 +1,127 @@
 import { useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
-import { useSettings, Settings } from "@/hooks/use-settings";
-import { useKnowledgeBase } from "@/hooks/use-knowledge-base";
-import { LiquidGlass } from "@/components/ui/liquid-glass";
-import { Button } from "@/components/ui/button";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
+import { toast } from "@/hooks/use-toast";
+import { useSettings } from "@/hooks/use-settings";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LiquidGlass } from "@/components/ui/liquid-glass";
 import { 
-  Settings as SettingsIcon, 
-  User, 
+  ArrowLeft, 
+  Settings as SettingsIcon,
   Brain, 
   Palette, 
-  Volume2, 
   Shield, 
+  User, 
+  BookOpen, 
   Database,
-  Globe,
-  Moon,
-  Sun,
-  Zap,
-  FileText,
-  Trash2,
   Download,
   Upload,
-  ArrowLeft,
+  Trash2,
+  Sun, 
+  Moon, 
+  Monitor,
+  Loader2,
   CheckCircle,
   XCircle,
-  AlertCircle,
-  Plus,
-  BookOpen,
-  Loader2
+  AlertCircle
 } from "lucide-react";
-import { useLocation } from "wouter";
 
 export default function SettingsPage() {
-  const { user, logoutMutation } = useAuth();
-  const { settings, updateSetting, resetSettings } = useSettings();
-  const { knowledge, stats, uploadMutation, deleteMutation, validateFile } = useKnowledgeBase();
   const [, setLocation] = useLocation();
-  const { toast } = useToast();
+  const { settings, updateSetting, resetSettings } = useSettings();
+  const queryClient = useQueryClient();
   const [dragActive, setDragActive] = useState(false);
 
-  // Database status query
-  const { data: dbStatus, isLoading: dbStatusLoading } = useQuery({
-    queryKey: ['/api/database/status'],
-    queryFn: async () => {
-      const response = await fetch('/api/database/status');
-      if (!response.ok) throw new Error('Failed to fetch database status');
-      return response.json();
-    },
-    refetchInterval: 30000, // Refresh every 30 seconds
+  // Fetch current user
+  const { data: user } = useQuery({
+    queryKey: ['/api/user'],
   });
 
-  const handleSettingChange = (key: keyof Settings, value: any) => {
-    updateSetting(key, value);
-    
-    toast({
-      title: "Settings Updated",
-      description: `${key.charAt(0).toUpperCase() + key.slice(1)} has been updated.`
-    });
-  };
+  // Knowledge base queries
+  const { data: knowledgeEntries } = useQuery({
+    queryKey: ['/api/knowledge-base'],
+  });
 
-  const exportSettings = () => {
-    const dataStr = JSON.stringify(settings, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    const exportFileDefaultName = 'denyse-ai-settings.json';
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
-    linkElement.click();
-    
-    toast({
-      title: "Settings Exported",
-      description: "Your settings have been downloaded as a JSON file."
-    });
-  };
+  const { data: stats } = useQuery({
+    queryKey: ['/api/knowledge-base/stats'],
+  });
 
-  const importSettings = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const importedSettings = JSON.parse(e.target?.result as string);
-          Object.keys(importedSettings).forEach(key => {
-            updateSetting(key as keyof Settings, importedSettings[key]);
-          });
-          toast({
-            title: "Settings Imported",
-            description: "Your settings have been successfully imported."
-          });
-        } catch (error) {
-          toast({
-            title: "Import Failed",
-            description: "Invalid settings file format.",
-            variant: "destructive"
-          });
-        }
-      };
-      reader.readAsText(file);
-    }
+  const { data: dbStatus, isLoading: dbStatusLoading } = useQuery({
+    queryKey: ['/api/database/status'],
+  });
+
+  // Mutations
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/knowledge-base/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete knowledge base entry');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/knowledge-base'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/knowledge-base/stats'] });
+    },
+  });
+
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/logout', {
+        method: 'POST',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to logout');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.clear();
+      setLocation('/auth');
+    },
+  });
+
+  const handleSettingChange = (key: string, value: any) => {
+    updateSetting(key as any, value);
   };
 
   const handleKnowledgeUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    
-    const file = files[0];
-    const validation = validateFile(file);
-    
-    if (!validation.isValid) {
-      toast({
-        title: "Invalid File",
-        description: validation.error,
-        variant: "destructive"
-      });
-      return;
-    }
+
+    const formData = new FormData();
+    formData.append('file', files[0]);
 
     try {
-      await uploadMutation.mutateAsync({ file });
+      const response = await fetch('/api/knowledge-base/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload knowledge base file');
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ['/api/knowledge-base'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/knowledge-base/stats'] });
+      
       toast({
-        title: "Knowledge Added",
-        description: `${file.name} has been successfully added to Denyse's knowledge base.`
+        title: "Knowledge Base Updated",
+        description: "Your document has been successfully processed and added to the knowledge base.",
       });
     } catch (error) {
       toast({
         title: "Upload Failed",
-        description: error.message || "Failed to upload knowledge base file.",
-        variant: "destructive"
+        description: "Failed to upload document. Please try again.",
+        variant: "destructive",
       });
-    }
-  };
-
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleKnowledgeUpload(e.dataTransfer.files);
     }
   };
 
@@ -183,9 +149,46 @@ export default function SettingsPage() {
     });
   };
 
+  const exportSettings = () => {
+    const dataStr = JSON.stringify(settings, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const exportFileDefaultName = 'denyse-settings.json';
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+  };
+
+  const importSettings = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const importedSettings = JSON.parse(e.target?.result as string);
+        Object.keys(importedSettings).forEach(key => {
+          handleSettingChange(key, importedSettings[key]);
+        });
+        toast({
+          title: "Settings Imported",
+          description: "Settings have been successfully imported."
+        });
+      } catch (error) {
+        toast({
+          title: "Import Failed",
+          description: "Failed to import settings. Please check the file format.",
+          variant: "destructive"
+        });
+      }
+    };
+    reader.readAsText(file);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-denyse-grey via-white to-denyse-green/10 p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-denyse-grey via-white to-denyse-green/10 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-6">
+      <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
@@ -197,7 +200,7 @@ export default function SettingsPage() {
             >
               <ArrowLeft className="w-4 h-4" />
             </Button>
-            <h1 className="text-3xl font-bold text-denyse-black flex items-center">
+            <h1 className="text-3xl font-bold text-denyse-black dark:text-white flex items-center">
               <SettingsIcon className="text-denyse-turquoise mr-3" />
               Settings
             </h1>
@@ -207,77 +210,44 @@ export default function SettingsPage() {
           </Badge>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Profile Settings */}
-          <LiquidGlass className="lg:col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center text-denyse-black">
-                  <User className="mr-2 text-denyse-turquoise" />
-                  Profile
-                </CardTitle>
-                <CardDescription>Manage your account settings</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Username</Label>
-                  <div className="p-2 bg-denyse-grey/20 rounded text-sm">
-                    {user?.username}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Account Type</Label>
-                  <Badge variant="secondary">BPN Organization</Badge>
-                </div>
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => logoutMutation.mutate()}
-                >
-                  Sign Out
-                </Button>
-              </CardContent>
-            </Card>
-          </LiquidGlass>
-
-          {/* Main Settings */}
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          {/* AI & Interface */}
+          <div className="space-y-6">
             {/* AI Settings */}
             <LiquidGlass>
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center text-denyse-black">
-                    <Brain className="mr-2 text-denyse-turquoise" />
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-lg">
+                    <Brain className="mr-2 text-denyse-turquoise w-5 h-5" />
                     AI Assistant
                   </CardTitle>
-                  <CardDescription>Configure AI behavior and responses</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm">AI Model</Label>
+                    <Select
+                      value={settings.aiModel}
+                      onValueChange={(value) => handleSettingChange('aiModel', value)}
+                    >
+                      <SelectTrigger className="h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="llama-3.1-8b">Llama 3.1 8B (Local)</SelectItem>
+                        <SelectItem value="gemma-2-9b">Gemma 2 9B (Local)</SelectItem>
+                        <SelectItem value="mistral-7b">Mistral 7B (Local)</SelectItem>
+                        <SelectItem value="codellama-7b">CodeLlama 7B (Local)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <Label>AI Model</Label>
-                      <Select
-                        value={settings.aiModel}
-                        onValueChange={(value) => handleSettingChange('aiModel', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="gemini-2.5-flash">Gemini 2.5 Flash</SelectItem>
-                          <SelectItem value="gemini-1.5-pro">Gemini 1.5 Pro</SelectItem>
-                          <SelectItem value="claude-3-sonnet">Claude 3 Sonnet</SelectItem>
-                          <SelectItem value="gpt-4">GPT-4</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Response Length</Label>
+                      <Label className="text-sm">Response</Label>
                       <Select
                         value={settings.responseLength}
                         onValueChange={(value) => handleSettingChange('responseLength', value)}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-9">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -287,46 +257,40 @@ export default function SettingsPage() {
                         </SelectContent>
                       </Select>
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Creativity Level: {settings.temperature}</Label>
-                    <Slider
-                      value={[settings.temperature]}
-                      onValueChange={(value) => handleSettingChange('temperature', value[0])}
-                      max={1}
-                      min={0}
-                      step={0.1}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-xs text-denyse-black/60">
-                      <span>Conservative</span>
-                      <span>Balanced</span>
-                      <span>Creative</span>
+                    <div className="space-y-2">
+                      <Label className="text-sm">Creativity: {settings.temperature}</Label>
+                      <Slider
+                        value={[settings.temperature]}
+                        onValueChange={(value) => handleSettingChange('temperature', value[0])}
+                        max={1}
+                        min={0}
+                        step={0.1}
+                        className="w-full"
+                      />
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </LiquidGlass>
 
-            {/* Appearance Settings */}
+            {/* Appearance */}
             <LiquidGlass>
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center text-denyse-black">
-                    <Palette className="mr-2 text-denyse-turquoise" />
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-lg">
+                    <Palette className="mr-2 text-denyse-turquoise w-5 h-5" />
                     Appearance
                   </CardTitle>
-                  <CardDescription>Customize the interface appearance</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <Label>Theme</Label>
+                      <Label className="text-sm">Theme</Label>
                       <Select
                         value={settings.theme}
                         onValueChange={(value) => handleSettingChange('theme', value)}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-9">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -344,7 +308,7 @@ export default function SettingsPage() {
                           </SelectItem>
                           <SelectItem value="system">
                             <div className="flex items-center">
-                              <Zap className="mr-2 w-4 h-4" />
+                              <Monitor className="mr-2 w-4 h-4" />
                               System
                             </div>
                           </SelectItem>
@@ -352,12 +316,12 @@ export default function SettingsPage() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>Language</Label>
+                      <Label className="text-sm">Language</Label>
                       <Select
                         value={settings.language}
                         onValueChange={(value) => handleSettingChange('language', value)}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-9">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -369,88 +333,64 @@ export default function SettingsPage() {
                       </Select>
                     </div>
                   </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">Sound</Label>
+                      <Switch
+                        checked={settings.soundEnabled}
+                        onCheckedChange={(checked) => handleSettingChange('soundEnabled', checked)}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">Voice</Label>
+                      <Switch
+                        checked={settings.voiceEnabled}
+                        onCheckedChange={(checked) => handleSettingChange('voiceEnabled', checked)}
+                      />
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </LiquidGlass>
+          </div>
 
-            {/* Audio & Voice Settings */}
+          {/* Privacy & Account */}
+          <div className="space-y-6">
+            {/* Privacy & Security */}
             <LiquidGlass>
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center text-denyse-black">
-                    <Volume2 className="mr-2 text-denyse-turquoise" />
-                    Audio & Voice
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-lg">
+                    <Shield className="mr-2 text-denyse-turquoise w-5 h-5" />
+                    Privacy & Security
                   </CardTitle>
-                  <CardDescription>Configure audio and voice features</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Sound Effects</Label>
-                      <p className="text-sm text-denyse-black/60">Enable UI sound effects</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">Privacy Mode</Label>
+                      <Switch
+                        checked={settings.privacyMode}
+                        onCheckedChange={(checked) => handleSettingChange('privacyMode', checked)}
+                      />
                     </div>
-                    <Switch
-                      checked={settings.soundEnabled}
-                      onCheckedChange={(checked) => handleSettingChange('soundEnabled', checked)}
-                    />
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm">Auto-save</Label>
+                      <Switch
+                        checked={settings.autoSave}
+                        onCheckedChange={(checked) => handleSettingChange('autoSave', checked)}
+                      />
+                    </div>
                   </div>
                   <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Voice Input</Label>
-                      <p className="text-sm text-denyse-black/60">Enable voice-to-text input</p>
-                    </div>
-                    <Switch
-                      checked={settings.voiceEnabled}
-                      onCheckedChange={(checked) => handleSettingChange('voiceEnabled', checked)}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Notifications</Label>
-                      <p className="text-sm text-denyse-black/60">Get notified about responses</p>
-                    </div>
+                    <Label className="text-sm">Notifications</Label>
                     <Switch
                       checked={settings.notifications}
                       onCheckedChange={(checked) => handleSettingChange('notifications', checked)}
                     />
                   </div>
-                </CardContent>
-              </Card>
-            </LiquidGlass>
-
-            {/* Privacy & Security */}
-            <LiquidGlass>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center text-denyse-black">
-                    <Shield className="mr-2 text-denyse-turquoise" />
-                    Privacy & Security
-                  </CardTitle>
-                  <CardDescription>Manage your data and privacy settings</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Privacy Mode</Label>
-                      <p className="text-sm text-denyse-black/60">Enhanced privacy for sensitive data</p>
-                    </div>
-                    <Switch
-                      checked={settings.privacyMode}
-                      onCheckedChange={(checked) => handleSettingChange('privacyMode', checked)}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Auto-save Chats</Label>
-                      <p className="text-sm text-denyse-black/60">Automatically save chat history</p>
-                    </div>
-                    <Switch
-                      checked={settings.autoSave}
-                      onCheckedChange={(checked) => handleSettingChange('autoSave', checked)}
-                    />
-                  </div>
                   <div className="space-y-2">
-                    <Label>Data Retention (days): {settings.dataRetention}</Label>
+                    <Label className="text-sm">Data Retention: {settings.dataRetention} days</Label>
                     <Slider
                       value={[settings.dataRetention]}
                       onValueChange={(value) => handleSettingChange('dataRetention', value[0])}
@@ -459,123 +399,110 @@ export default function SettingsPage() {
                       step={1}
                       className="w-full"
                     />
-                    <div className="flex justify-between text-xs text-denyse-black/60">
-                      <span>1 day</span>
-                      <span>6 months</span>
-                      <span>1 year</span>
+                    <div className="flex justify-between text-xs text-denyse-black/60 dark:text-white/60">
+                      <span>1d</span>
+                      <span>6m</span>
+                      <span>1y</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </LiquidGlass>
 
-            {/* Knowledge Base Training */}
+            {/* Profile & Account */}
             <LiquidGlass>
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center text-denyse-black">
-                    <BookOpen className="mr-2 text-denyse-turquoise" />
-                    Denyse's Knowledge Base
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-lg">
+                    <User className="mr-2 text-denyse-turquoise w-5 h-5" />
+                    Profile & Account
                   </CardTitle>
-                  <CardDescription>Train Denyse with your own documents and knowledge</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm">Username</Label>
+                    <div className="p-2 bg-denyse-grey/20 dark:bg-slate-800 rounded text-sm">
+                      {user?.username}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm">Account Type</Label>
+                    <Badge variant="secondary">Organization</Badge>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => logoutMutation.mutate()}
+                  >
+                    Sign Out
+                  </Button>
+                </CardContent>
+              </Card>
+            </LiquidGlass>
+          </div>
+
+          {/* Data & System */}
+          <div className="space-y-6">
+            {/* Knowledge Base */}
+            <LiquidGlass>
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-lg">
+                    <BookOpen className="mr-2 text-denyse-turquoise w-5 h-5" />
+                    Knowledge Base
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   {/* Knowledge Base Stats */}
                   {stats && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="bg-denyse-grey/20 rounded-lg p-4">
-                        <div className="text-2xl font-bold text-denyse-turquoise">{stats.totalEntries}</div>
-                        <div className="text-sm text-denyse-black/70">Knowledge Entries</div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-denyse-grey/20 dark:bg-slate-800 rounded-lg p-3">
+                        <div className="text-lg font-bold text-denyse-turquoise">{stats.totalEntries}</div>
+                        <div className="text-xs text-denyse-black/70 dark:text-white/70">Entries</div>
                       </div>
-                      <div className="bg-denyse-grey/20 rounded-lg p-4">
-                        <div className="text-2xl font-bold text-denyse-turquoise">
+                      <div className="bg-denyse-grey/20 dark:bg-slate-800 rounded-lg p-3">
+                        <div className="text-lg font-bold text-denyse-turquoise">
                           {Math.round(stats.totalSize / 1024)}KB
                         </div>
-                        <div className="text-sm text-denyse-black/70">Total Content</div>
-                      </div>
-                      <div className="bg-denyse-grey/20 rounded-lg p-4">
-                        <div className="text-2xl font-bold text-denyse-turquoise">
-                          {Object.keys(stats.fileTypes).length}
-                        </div>
-                        <div className="text-sm text-denyse-black/70">File Types</div>
+                        <div className="text-xs text-denyse-black/70 dark:text-white/70">Size</div>
                       </div>
                     </div>
                   )}
 
-                  {/* Upload Area */}
-                  <div
-                    className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
-                      dragActive
-                        ? 'border-denyse-turquoise bg-denyse-turquoise/10'
-                        : 'border-denyse-grey hover:border-denyse-turquoise/50'
-                    }`}
-                    onDragEnter={handleDrag}
-                    onDragLeave={handleDrag}
-                    onDragOver={handleDrag}
-                    onDrop={handleDrop}
+                  {/* Upload Button */}
+                  <Button
+                    onClick={() => document.getElementById('knowledge-upload')?.click()}
+                    className="w-full"
+                    variant="outline"
                   >
-                    <div className="space-y-4">
-                      <div className="w-16 h-16 bg-denyse-turquoise rounded-full mx-auto flex items-center justify-center">
-                        <Upload className="w-8 h-8 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-denyse-black">Import Training Data</h3>
-                        <p className="text-denyse-black/70">
-                          Upload documents to train Denyse with your knowledge
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-center space-x-4">
-                        <Button
-                          variant="outline"
-                          onClick={() => document.getElementById('knowledge-upload')?.click()}
-                          disabled={uploadMutation.isPending}
-                        >
-                          {uploadMutation.isPending ? (
-                            <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                          ) : (
-                            <Plus className="mr-2 w-4 h-4" />
-                          )}
-                          Choose File
-                        </Button>
-                        <span className="text-sm text-denyse-black/70">or drag and drop</span>
-                      </div>
-                      <p className="text-xs text-denyse-black/50">
-                        Supported: PDF, DOCX, DOC, TXT (max 10MB)
-                      </p>
-                    </div>
-                  </div>
+                    <Upload className="mr-2 w-4 h-4" />
+                    Upload Document
+                  </Button>
 
                   {/* Knowledge Base List */}
-                  {knowledge.length > 0 && (
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-denyse-black">Your Knowledge Base</h4>
-                      <div className="max-h-64 overflow-y-auto space-y-2">
-                        {knowledge.map((entry) => (
-                          <div
-                            key={entry.id}
-                            className="flex items-center justify-between p-3 bg-denyse-grey/20 rounded-lg"
-                          >
-                            <div className="flex items-center space-x-3">
-                              <FileText className="w-5 h-5 text-denyse-turquoise" />
-                              <div>
-                                <div className="font-medium text-denyse-black">{entry.title}</div>
-                                <div className="text-sm text-denyse-black/70">
-                                  {entry.filename} • {Math.round(entry.content.length / 1024)}KB
-                                </div>
-                              </div>
+                  {knowledgeEntries && knowledgeEntries.length > 0 && (
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {knowledgeEntries.slice(0, 3).map((entry: any) => (
+                        <div key={entry.id} className="flex items-center justify-between p-2 bg-denyse-grey/10 dark:bg-slate-800 rounded">
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm font-medium text-denyse-black dark:text-white truncate">
+                              {entry.title}
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteKnowledge(entry.id, entry.title)}
-                              disabled={deleteMutation.isPending}
-                              className="text-red-600 hover:text-red-700"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            <div className="text-xs text-denyse-black/60 dark:text-white/60">
+                              {entry.fileType?.toUpperCase()}
+                            </div>
                           </div>
-                        ))}
-                      </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteKnowledge(entry.id, entry.title)}
+                            disabled={deleteMutation.isPending}
+                            className="text-red-600 hover:text-red-700 p-1"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      ))}
                     </div>
                   )}
 
@@ -593,67 +520,48 @@ export default function SettingsPage() {
             {/* Database Status */}
             <LiquidGlass>
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center text-denyse-black">
-                    <Database className="mr-2 text-denyse-turquoise" />
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-lg">
+                    <Database className="mr-2 text-denyse-turquoise w-5 h-5" />
                     Database Status
                   </CardTitle>
-                  <CardDescription>Monitor your database connection and stats</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {dbStatusLoading ? (
-                    <div className="flex items-center space-x-3">
-                      <Loader2 className="w-5 h-5 animate-spin text-denyse-turquoise" />
-                      <span className="text-denyse-black/70">Checking database status...</span>
+                    <div className="flex items-center space-x-2">
+                      <Loader2 className="w-4 h-4 animate-spin text-denyse-turquoise" />
+                      <span className="text-sm text-denyse-black/70 dark:text-white/70">Checking...</span>
                     </div>
                   ) : dbStatus ? (
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-3">
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
                         {dbStatus.healthy ? (
-                          <CheckCircle className="w-5 h-5 text-green-600" />
+                          <CheckCircle className="w-4 h-4 text-green-600" />
                         ) : (
-                          <XCircle className="w-5 h-5 text-red-600" />
+                          <XCircle className="w-4 h-4 text-red-600" />
                         )}
-                        <div>
-                          <div className="font-medium text-denyse-black">
-                            {dbStatus.healthy ? 'Connected' : 'Connection Error'}
-                          </div>
-                          <div className="text-sm text-denyse-black/70">
-                            Last checked: {new Date(dbStatus.lastChecked).toLocaleTimeString()}
-                          </div>
+                        <div className="text-sm font-medium text-denyse-black dark:text-white">
+                          {dbStatus.healthy ? 'Connected' : 'Error'}
                         </div>
                       </div>
                       
                       {dbStatus.healthy && dbStatus.stats && (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <div className="bg-denyse-grey/20 rounded-lg p-3">
-                            <div className="text-xl font-bold text-denyse-turquoise">{dbStatus.stats.users}</div>
-                            <div className="text-sm text-denyse-black/70">Users</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="bg-denyse-grey/20 dark:bg-slate-800 rounded p-2">
+                            <div className="text-sm font-bold text-denyse-turquoise">{dbStatus.stats.users}</div>
+                            <div className="text-xs text-denyse-black/70 dark:text-white/70">Users</div>
                           </div>
-                          <div className="bg-denyse-grey/20 rounded-lg p-3">
-                            <div className="text-xl font-bold text-denyse-turquoise">{dbStatus.stats.chats}</div>
-                            <div className="text-sm text-denyse-black/70">Chats</div>
-                          </div>
-                          <div className="bg-denyse-grey/20 rounded-lg p-3">
-                            <div className="text-xl font-bold text-denyse-turquoise">{dbStatus.stats.knowledgeBase}</div>
-                            <div className="text-sm text-denyse-black/70">Knowledge Entries</div>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {!dbStatus.healthy && (
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                          <div className="flex items-center space-x-2">
-                            <AlertCircle className="w-4 h-4 text-red-600" />
-                            <span className="text-sm text-red-700">{dbStatus.error}</span>
+                          <div className="bg-denyse-grey/20 dark:bg-slate-800 rounded p-2">
+                            <div className="text-sm font-bold text-denyse-turquoise">{dbStatus.stats.chats}</div>
+                            <div className="text-xs text-denyse-black/70 dark:text-white/70">Chats</div>
                           </div>
                         </div>
                       )}
                     </div>
                   ) : (
-                    <div className="flex items-center space-x-3">
-                      <XCircle className="w-5 h-5 text-red-600" />
-                      <span className="text-denyse-black/70">Unable to check database status</span>
+                    <div className="flex items-center space-x-2">
+                      <XCircle className="w-4 h-4 text-red-600" />
+                      <span className="text-sm text-denyse-black/70 dark:text-white/70">Unable to check</span>
                     </div>
                   )}
                 </CardContent>
@@ -663,40 +571,42 @@ export default function SettingsPage() {
             {/* Settings Management */}
             <LiquidGlass>
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center text-denyse-black">
-                    <SettingsIcon className="mr-2 text-denyse-turquoise" />
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center text-denyse-black dark:text-white text-lg">
+                    <SettingsIcon className="mr-2 text-denyse-turquoise w-5 h-5" />
                     Settings Management
                   </CardTitle>
-                  <CardDescription>Export, import, and reset your settings</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <CardContent className="space-y-3">
+                  <div className="grid grid-cols-2 gap-2">
                     <Button
                       variant="outline"
-                      className="w-full flex items-center justify-center"
+                      size="sm"
+                      className="w-full"
                       onClick={exportSettings}
                     >
-                      <Download className="mr-2 w-4 h-4" />
-                      Export Settings
+                      <Download className="mr-1 w-3 h-3" />
+                      Export
                     </Button>
                     <Button
                       variant="outline"
-                      className="w-full flex items-center justify-center"
+                      size="sm"
+                      className="w-full"
                       onClick={() => document.getElementById('import-settings')?.click()}
                     >
-                      <Upload className="mr-2 w-4 h-4" />
-                      Import Settings
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="w-full flex items-center justify-center text-red-600 hover:text-red-700"
-                      onClick={handleResetSettings}
-                    >
-                      <Trash2 className="mr-2 w-4 h-4" />
-                      Reset All
+                      <Upload className="mr-1 w-3 h-3" />
+                      Import
                     </Button>
                   </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full text-red-600 hover:text-red-700"
+                    onClick={handleResetSettings}
+                  >
+                    <Trash2 className="mr-1 w-3 h-3" />
+                    Reset All
+                  </Button>
                   <input
                     id="import-settings"
                     type="file"

@@ -209,32 +209,17 @@ export function MessageBubble({ message }: MessageBubbleProps) {
               </div>
             </div>
 
-            {!isUser && (
-              <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex items-center space-x-2">
-                  <Badge variant="secondary" className="text-xs">
-                    AI Generated
-                  </Badge>
-                  {message.metadata && 
-                   typeof message.metadata === 'object' && 
-                   'sources' in message.metadata && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-xs p-1 h-auto text-gray-600 dark:text-gray-300"
-                    >
-                      <ExternalLink className="w-3 h-3 mr-1" />
-                      Sources
-                    </Button>
-                  )}
-                </div>
+            {!isUser && message.metadata && 
+             typeof message.metadata === 'object' && 
+             'sources' in message.metadata && (
+              <div className="flex items-center justify-start pt-2 border-t border-gray-200 dark:border-gray-700">
                 <Button
                   variant="ghost"
                   size="sm"
                   className="text-xs p-1 h-auto text-gray-600 dark:text-gray-300"
                 >
-                  <Check className="w-3 h-3 mr-1" />
-                  Helpful
+                  <ExternalLink className="w-3 h-3 mr-1" />
+                  Sources
                 </Button>
               </div>
             )}

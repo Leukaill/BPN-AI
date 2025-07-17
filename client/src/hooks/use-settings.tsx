@@ -17,7 +17,7 @@ export interface Settings {
 const defaultSettings: Settings = {
   theme: "system",
   language: "en",
-  aiModel: "gemini-2.5-flash",
+  aiModel: "llama-3.1-8b",
   responseLength: "medium",
   temperature: 0.7,
   autoSave: true,
