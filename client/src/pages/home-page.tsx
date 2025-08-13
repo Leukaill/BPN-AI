@@ -27,20 +27,35 @@ export default function HomePage() {
           variant="ghost"
           size="sm"
           onClick={() => setSidebarOpen(true)}
-          className="fixed top-4 left-4 z-60 mobile-glass p-3 mobile-touch-target"
+          className="fixed top-4 left-4 z-50 mobile-glass p-3 mobile-touch-target shadow-lg"
         >
           <Menu className="w-5 h-5 text-denyse-turquoise" />
         </Button>
       )}
 
       <div className="flex h-full relative z-10">
-        <Sidebar 
-          currentChatId={currentChatId} 
-          onChatSelect={setCurrentChatId}
-          onNewChat={() => setCurrentChatId(null)}
-          isOpen={isMobile ? sidebarOpen : true}
-          onClose={() => setSidebarOpen(false)}
-        />
+        {/* Desktop Sidebar */}
+        {!isMobile && (
+          <Sidebar 
+            currentChatId={currentChatId} 
+            onChatSelect={setCurrentChatId}
+            onNewChat={() => setCurrentChatId(null)}
+            isOpen={true}
+            onClose={() => {}}
+          />
+        )}
+        
+        {/* Mobile Sidebar */}
+        {isMobile && (
+          <Sidebar 
+            currentChatId={currentChatId} 
+            onChatSelect={setCurrentChatId}
+            onNewChat={() => setCurrentChatId(null)}
+            isOpen={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
+          />
+        )}
+        
         <ChatArea 
           currentChatId={currentChatId} 
           onChatCreated={setCurrentChatId}

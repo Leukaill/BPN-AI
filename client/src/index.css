@@ -356,8 +356,8 @@
   }
   
   .mobile-overlay {
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
   }
   
   /* Mobile-optimized glassmorphism */
@@ -383,6 +383,17 @@
   .mobile-touch-target {
     min-height: 44px;
     min-width: 44px;
+  }
+  
+  /* Hide desktop sidebar completely on mobile */
+  .desktop-sidebar {
+    display: none !important;
+  }
+  
+  /* Mobile chat area adjustments */
+  .mobile-chat-area {
+    width: 100% !important;
+    max-width: 100% !important;
   }
 }
 

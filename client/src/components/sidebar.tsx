@@ -64,17 +64,17 @@ export function Sidebar({ currentChatId, onChatSelect, onNewChat, isOpen, onClos
   };
 
   const sidebarClasses = isMobile 
-    ? `fixed inset-y-0 left-0 z-50 w-80 transform transition-transform duration-300 ease-in-out ${
+    ? `fixed inset-y-0 left-0 z-40 w-80 max-w-[85vw] transform transition-transform duration-300 ease-in-out ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
-      } sidebar-glass dark:bg-slate-900/50 flex flex-col relative overflow-hidden mobile-safe-area`
-    : `w-80 sidebar-glass dark:bg-slate-900/50 flex flex-col relative overflow-hidden`;
+      } bg-white dark:bg-slate-900 border-r border-white/10 flex flex-col overflow-hidden mobile-safe-area shadow-2xl`
+    : `w-80 sidebar-glass dark:bg-slate-900/50 flex flex-col overflow-hidden`;
 
   return (
     <>
       {/* Mobile overlay */}
       {isMobile && isOpen && (
         <div 
-          className="fixed inset-0 z-40 mobile-overlay"
+          className="fixed inset-0 z-30 mobile-overlay"
           onClick={onClose}
         />
       )}

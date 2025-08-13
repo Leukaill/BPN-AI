@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { useChat } from "@/hooks/use-chat";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { LiquidGlass } from "./ui/liquid-glass";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
@@ -40,6 +41,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
   const [uploadedDocument, setUploadedDocument] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+  const isMobile = useIsMobile();
 
   const { data: messages = [] } = useQuery<Message[]>({
     queryKey: ["/api/chats", currentChatId, "messages"],
@@ -171,12 +173,12 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col relative mobile-keyboard-adjust">
+    <div className={`flex-1 flex flex-col relative mobile-keyboard-adjust ${isMobile ? 'w-full' : ''}`}>
       {/* Liquid Glass Overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-denyse-white/90 to-denyse-grey/30 dark:from-slate-800/50 dark:to-slate-900/30 backdrop-blur-sm"></div>
       
       {/* Chat Header */}
-      <div className="relative z-10 liquid-glass-strong border-b border-white/10 p-4 md:p-6 mobile-safe-area">
+      <div className={`relative z-10 liquid-glass-strong border-b border-white/10 p-4 md:p-6 ${isMobile ? 'pl-16' : ''} mobile-safe-area`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3 md:space-x-4">
             <div className="liquid-bubble w-10 h-10 md:w-12 md:h-12 bg-denyse-turquoise rounded-full flex items-center justify-center">
@@ -212,14 +214,14 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
             {!currentChatId && messages.length === 0 ? (
               <div className="max-w-4xl mx-auto">
                 {/* Welcome Message */}
-                <div className="text-center py-12">
-                  <div className="liquid-bubble w-24 h-24 bg-gradient-to-br from-denyse-turquoise to-denyse-green rounded-full mx-auto mb-6 flex items-center justify-center">
-                    <Bot className="text-white text-3xl" />
+                <div className="text-center py-8 md:py-12 px-4">
+                  <div className="liquid-bubble w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-denyse-turquoise to-denyse-green rounded-full mx-auto mb-4 md:mb-6 flex items-center justify-center">
+                    <Bot className="text-white text-xl md:text-3xl" />
                   </div>
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3 md:mb-4">
                     Meet Denyse, your personal AI assistant
                   </h2>
-                  <p className="text-gray-800 dark:text-slate-300 max-w-2xl mx-auto">
+                  <p className="text-sm md:text-base text-gray-800 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
                     I can help you analyze documents, extract information, generate reports, and answer questions using data from your uploaded files and your organization's knowledge base.
                   </p>
                 </div>
