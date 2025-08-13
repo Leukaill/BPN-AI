@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { ChatArea } from "@/components/chat-area";
 import { useAuth } from "@/hooks/use-auth";
@@ -11,7 +11,6 @@ export default function HomePage() {
   const [currentChatId, setCurrentChatId] = useState<number | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
-
 
 
   return (

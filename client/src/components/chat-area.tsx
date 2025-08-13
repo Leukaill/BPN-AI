@@ -21,7 +21,8 @@ import {
   BarChart, 
   Globe,
   MoreVertical,
-  X
+  X,
+  Menu
 } from "lucide-react";
 import { Message } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
