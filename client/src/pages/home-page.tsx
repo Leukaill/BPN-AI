@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sidebar } from "@/components/sidebar";
 import { ChatArea } from "@/components/chat-area";
 import { useAuth } from "@/hooks/use-auth";
@@ -12,6 +12,8 @@ export default function HomePage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
 
+
+
   return (
     <div className="h-screen bg-gradient-to-br from-denyse-white via-denyse-grey to-denyse-white dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 overflow-hidden relative mobile-safe-area">
       {/* Floating Liquid Elements Background - Hidden on mobile for performance */}
@@ -21,17 +23,7 @@ export default function HomePage() {
         <div className="absolute bottom-20 left-1/3 w-20 h-20 bg-denyse-turquoise opacity-10 rounded-full animate-bubble-float" style={{ animationDelay: '4s' }}></div>
       </div>
 
-      {/* Mobile menu button */}
-      {isMobile && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setSidebarOpen(true)}
-          className="fixed top-4 left-4 z-50 mobile-glass p-3 mobile-touch-target shadow-lg"
-        >
-          <Menu className="w-5 h-5 text-denyse-turquoise" />
-        </Button>
-      )}
+      {/* Mobile menu button - positioned in chat header */}
 
       <div className="flex h-full relative z-10">
         {/* Desktop Sidebar */}
@@ -59,6 +51,7 @@ export default function HomePage() {
         <ChatArea 
           currentChatId={currentChatId} 
           onChatCreated={setCurrentChatId}
+          onToggleSidebar={() => setSidebarOpen(prev => !prev)}
         />
       </div>
     </div>

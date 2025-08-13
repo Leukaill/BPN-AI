@@ -30,9 +30,10 @@ import { useToast } from "@/hooks/use-toast";
 interface ChatAreaProps {
   currentChatId: number | null;
   onChatCreated: (chatId: number) => void;
+  onToggleSidebar?: () => void;
 }
 
-export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
+export function ChatArea({ currentChatId, onChatCreated, onToggleSidebar }: ChatAreaProps) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [message, setMessage] = useState("");
@@ -178,9 +179,21 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
       <div className="absolute inset-0 bg-gradient-to-r from-denyse-white/90 to-denyse-grey/30 dark:from-slate-800/50 dark:to-slate-900/30 backdrop-blur-sm"></div>
       
       {/* Chat Header */}
-      <div className={`relative z-10 liquid-glass-strong border-b border-white/10 p-4 md:p-6 ${isMobile ? 'pl-16' : ''} mobile-safe-area`}>
+      <div className="relative z-10 liquid-glass-strong border-b border-white/10 p-4 md:p-6 mobile-safe-area">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3 md:space-x-4">
+            {/* Mobile hamburger menu integrated into header */}
+            {isMobile && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onToggleSidebar}
+                className="mobile-glass p-2 mobile-touch-target mr-2 hover:bg-white/20 rounded-lg"
+              >
+                <Menu className="w-5 h-5 text-denyse-turquoise" />
+              </Button>
+            )}
+            
             <div className="liquid-bubble w-10 h-10 md:w-12 md:h-12 bg-denyse-turquoise rounded-full flex items-center justify-center">
               <Bot className="text-white text-lg md:text-xl" />
             </div>
