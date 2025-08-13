@@ -228,72 +228,111 @@ export function ChatArea({ currentChatId, onChatCreated, onToggleSidebar }: Chat
             {!currentChatId && messages.length === 0 ? (
               <div className="max-w-4xl mx-auto">
                 {/* Welcome Message */}
-                <div className="text-center py-8 md:py-12 px-4">
-                  <div className="liquid-bubble w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-denyse-turquoise to-denyse-green rounded-full mx-auto mb-4 md:mb-6 flex items-center justify-center">
-                    <Bot className="text-white text-xl md:text-3xl" />
+                <div className={`text-center px-4 relative ${isMobile ? 'py-6' : 'py-8 md:py-16'}`}>
+                  {/* Mobile-optimized animated background elements */}
+                  {isMobile && (
+                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                      <div className="absolute top-1/4 left-1/6 w-20 h-20 bg-denyse-turquoise/15 rounded-full blur-lg animate-pulse"></div>
+                      <div className="absolute bottom-1/3 right-1/6 w-24 h-24 bg-denyse-green/15 rounded-full blur-lg animate-pulse" style={{animationDelay: '1s'}}></div>
+                    </div>
+                  )}
+                  
+                  <div className="relative z-10">
+                    <div className={`liquid-bubble bg-gradient-to-br from-denyse-turquoise via-blue-500 to-denyse-green rounded-full mx-auto flex items-center justify-center shadow-2xl ring-4 ring-white/20 dark:ring-slate-700/20 ${isMobile ? 'w-16 h-16 mb-4' : 'w-20 h-20 md:w-28 md:h-28 mb-6 md:mb-8'}`}>
+                      <Bot className={`text-white drop-shadow-lg ${isMobile ? 'text-lg' : 'text-2xl md:text-4xl'}`} />
+                    </div>
+                    
+                    <div className={`space-y-3 ${isMobile ? '' : 'md:space-y-6'}`}>
+                      <h2 className={`font-bold bg-gradient-to-r from-denyse-turquoise via-blue-600 to-denyse-green bg-clip-text text-transparent ${isMobile ? 'text-2xl mb-3' : 'text-3xl md:text-4xl lg:text-5xl mb-4 md:mb-6'}`}>
+                        Meet Denyse
+                      </h2>
+                      <div className="inline-block">
+                        <p className={`text-gray-700 dark:text-slate-300 font-medium mb-2 ${isMobile ? 'text-base' : 'text-lg md:text-xl'}`}>
+                          Your AI-Powered M&E Assistant
+                        </p>
+                        <div className="h-0.5 bg-gradient-to-r from-denyse-turquoise to-denyse-green rounded-full"></div>
+                      </div>
+                      
+                      <p className={`text-gray-600 dark:text-slate-400 mx-auto leading-relaxed ${isMobile ? 'text-sm max-w-sm' : 'text-sm md:text-base max-w-3xl'}`}>
+                        I specialize in Monitoring & Evaluation, helping you analyze documents, extract insights, 
+                        and generate comprehensive reports with AI.
+                      </p>
+                    </div>
                   </div>
-                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-3 md:mb-4">
-                    Meet Denyse, your personal AI assistant
-                  </h2>
-                  <p className="text-sm md:text-base text-gray-800 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-                    I can help you analyze documents, extract information, generate reports, and answer questions using data from your uploaded files and your organization's knowledge base.
-                  </p>
                 </div>
 
                 {/* Sample Capabilities */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8">
-                  <LiquidGlass className="rounded-xl p-4 md:p-6 hover:bg-white/40 transition-all duration-300 cursor-pointer group md:animate-morphing mobile-touch-target">
-                    <div className="flex items-start space-x-3 md:space-x-4">
-                      <Upload className="text-denyse-turquoise text-lg md:text-2xl mt-1 flex-shrink-0" />
-                      <div className="min-w-0">
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1 md:mb-2 text-sm md:text-base">Document Analysis</h3>
-                        <p className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
-                          Upload PDFs, DOCX files and extract key information instantly.
+                <div className={`grid grid-cols-1 mx-auto ${isMobile ? 'gap-3 mb-6 max-w-sm' : 'md:grid-cols-2 gap-4 md:gap-6 mb-8 md:mb-12 max-w-4xl'}`}>
+                  <LiquidGlass className={`hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all duration-500 cursor-pointer group border border-white/30 dark:border-slate-700/30 hover:border-denyse-turquoise/30 mobile-touch-target relative overflow-hidden ${isMobile ? 'rounded-xl p-4 hover:shadow-lg' : 'rounded-2xl p-6 md:p-8 hover:shadow-xl hover:shadow-denyse-turquoise/10'}`}>
+                    {!isMobile && <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-denyse-turquoise/20 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>}
+                    <div className={`flex items-start relative z-10 ${isMobile ? 'space-x-3' : 'space-x-4 md:space-x-5'}`}>
+                      <div className={`flex-shrink-0 bg-gradient-to-br from-denyse-turquoise to-blue-500 rounded-xl flex items-center justify-center shadow-lg transition-transform duration-300 ${isMobile ? 'w-10 h-10 group-hover:scale-105' : 'w-12 h-12 md:w-14 md:h-14 rounded-2xl group-hover:scale-110'}`}>
+                        <Upload className={`text-white ${isMobile ? 'text-sm' : 'text-lg md:text-xl'}`} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className={`font-bold text-gray-900 dark:text-white mb-1 group-hover:text-denyse-turquoise transition-colors duration-300 ${isMobile ? 'text-sm' : 'text-base md:text-lg mb-2'}`}>
+                          Document Analysis
+                        </h3>
+                        <p className={`text-gray-600 dark:text-gray-400 leading-relaxed ${isMobile ? 'text-xs' : 'text-sm md:text-base'}`}>
+                          {isMobile ? 'Upload PDFs, DOCX files for instant M&E analysis.' : 'Upload PDFs, DOCX files and extract key M&E insights instantly with AI-powered analysis.'}
                         </p>
                       </div>
                     </div>
                   </LiquidGlass>
                   
                   <LiquidGlass 
-                    className="rounded-xl p-4 md:p-6 hover:bg-white/40 transition-all duration-300 cursor-pointer group md:animate-morphing mobile-touch-target"
-                    style={{ animationDelay: '0.5s' }}
+                    className={`hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all duration-500 cursor-pointer group border border-white/30 dark:border-slate-700/30 hover:border-denyse-green/30 mobile-touch-target relative overflow-hidden ${isMobile ? 'rounded-xl p-4 hover:shadow-lg' : 'rounded-2xl p-6 md:p-8 hover:shadow-xl hover:shadow-denyse-green/10'}`}
+                    style={{ animationDelay: '0.2s' }}
                   >
-                    <div className="flex items-start space-x-3 md:space-x-4">
-                      <BarChart className="text-denyse-green text-lg md:text-2xl mt-1 flex-shrink-0" />
-                      <div className="min-w-0">
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1 md:mb-2 text-sm md:text-base">Report Generation</h3>
-                        <p className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
-                          Create comprehensive reports using data from multiple sources.
+                    {!isMobile && <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-denyse-green/20 to-transparent rounded-bl-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>}
+                    <div className={`flex items-start relative z-10 ${isMobile ? 'space-x-3' : 'space-x-4 md:space-x-5'}`}>
+                      <div className={`flex-shrink-0 bg-gradient-to-br from-denyse-green to-green-500 rounded-xl flex items-center justify-center shadow-lg transition-transform duration-300 ${isMobile ? 'w-10 h-10 group-hover:scale-105' : 'w-12 h-12 md:w-14 md:h-14 rounded-2xl group-hover:scale-110'}`}>
+                        <BarChart className={`text-white ${isMobile ? 'text-sm' : 'text-lg md:text-xl'}`} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className={`font-bold text-gray-900 dark:text-white mb-1 group-hover:text-denyse-green transition-colors duration-300 ${isMobile ? 'text-sm' : 'text-base md:text-lg mb-2'}`}>
+                          M&E Report Generation
+                        </h3>
+                        <p className={`text-gray-600 dark:text-gray-400 leading-relaxed ${isMobile ? 'text-xs' : 'text-sm md:text-base'}`}>
+                          {isMobile ? 'Generate M&E reports with indicators and assessments.' : 'Create comprehensive M&E reports with indicators, outcomes, and impact assessments.'}
                         </p>
                       </div>
                     </div>
                   </LiquidGlass>
                   
                   <LiquidGlass 
-                    className="rounded-xl p-4 md:p-6 hover:bg-white/40 transition-all duration-300 cursor-pointer group md:animate-morphing mobile-touch-target"
+                    className={`hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all duration-500 cursor-pointer group border border-white/30 dark:border-slate-700/30 hover:border-denyse-turquoise/30 mobile-touch-target relative overflow-hidden ${isMobile ? 'rounded-xl p-4 hover:shadow-lg' : 'rounded-xl p-4 md:p-6 hover:bg-white/40 md:animate-morphing'}`}
                     style={{ animationDelay: '1s' }}
                   >
-                    <div className="flex items-start space-x-3 md:space-x-4">
-                      <FileText className="text-denyse-turquoise text-lg md:text-2xl mt-1 flex-shrink-0" />
-                      <div className="min-w-0">
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1 md:mb-2 text-sm md:text-base">Intelligent Search</h3>
-                        <p className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
-                          Query information with context and reasoning capabilities.
+                    <div className={`flex items-start relative z-10 ${isMobile ? 'space-x-3' : 'space-x-3 md:space-x-4'}`}>
+                      <div className={`flex-shrink-0 bg-gradient-to-br from-denyse-turquoise to-blue-500 rounded-xl flex items-center justify-center shadow-lg transition-transform duration-300 ${isMobile ? 'w-10 h-10 group-hover:scale-105' : 'w-10 h-10'}`}>
+                        <FileText className={`text-white ${isMobile ? 'text-sm' : 'text-lg'}`} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className={`font-bold text-gray-900 dark:text-white mb-1 group-hover:text-denyse-turquoise transition-colors duration-300 ${isMobile ? 'text-sm' : 'text-sm md:text-base'}`}>
+                          Intelligent Search
+                        </h3>
+                        <p className={`text-gray-600 dark:text-gray-400 leading-relaxed ${isMobile ? 'text-xs' : 'text-xs md:text-sm'}`}>
+                          {isMobile ? 'Query with context and AI reasoning.' : 'Query information with context and reasoning capabilities.'}
                         </p>
                       </div>
                     </div>
                   </LiquidGlass>
                   
                   <LiquidGlass 
-                    className="rounded-xl p-4 md:p-6 hover:bg-white/40 transition-all duration-300 cursor-pointer group md:animate-morphing mobile-touch-target"
+                    className={`hover:bg-white/50 dark:hover:bg-slate-800/50 transition-all duration-500 cursor-pointer group border border-white/30 dark:border-slate-700/30 hover:border-denyse-green/30 mobile-touch-target relative overflow-hidden ${isMobile ? 'rounded-xl p-4 hover:shadow-lg' : 'rounded-xl p-4 md:p-6 hover:bg-white/40 md:animate-morphing'}`}
                     style={{ animationDelay: '1.5s' }}
                   >
-                    <div className="flex items-start space-x-3 md:space-x-4">
-                      <Globe className="text-denyse-green text-lg md:text-2xl mt-1 flex-shrink-0" />
-                      <div className="min-w-0">
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1 md:mb-2 text-sm md:text-base">Company Knowledge Base</h3>
-                        <p className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
-                          Access information from your company's knowledge base automatically.
+                    <div className={`flex items-start relative z-10 ${isMobile ? 'space-x-3' : 'space-x-3 md:space-x-4'}`}>
+                      <div className={`flex-shrink-0 bg-gradient-to-br from-denyse-green to-green-500 rounded-xl flex items-center justify-center shadow-lg transition-transform duration-300 ${isMobile ? 'w-10 h-10 group-hover:scale-105' : 'w-10 h-10'}`}>
+                        <Globe className={`text-white ${isMobile ? 'text-sm' : 'text-lg'}`} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className={`font-bold text-gray-900 dark:text-white mb-1 group-hover:text-denyse-green transition-colors duration-300 ${isMobile ? 'text-sm' : 'text-sm md:text-base'}`}>
+                          Knowledge Base
+                        </h3>
+                        <p className={`text-gray-600 dark:text-gray-400 leading-relaxed ${isMobile ? 'text-xs' : 'text-xs md:text-sm'}`}>
+                          {isMobile ? 'Access your company knowledge automatically.' : 'Access information from your company\'s knowledge base automatically.'}
                         </p>
                       </div>
                     </div>
@@ -327,10 +366,10 @@ export function ChatArea({ currentChatId, onChatCreated, onToggleSidebar }: Chat
       </div>
 
       {/* Input Area */}
-      <div className="relative z-10 p-3 md:p-6 border-t border-white/10">
+      <div className={`relative z-10 border-t border-white/10 ${isMobile ? 'p-3' : 'p-3 md:p-6'}`}>
         <div className="max-w-4xl mx-auto">
-          <LiquidGlass className="rounded-2xl p-1 md:animate-morphing" variant="strong">
-            <div className="flex items-end space-x-2 md:space-x-4 p-3 md:p-4">
+          <LiquidGlass className={`p-1 ${isMobile ? 'rounded-xl' : 'rounded-2xl md:animate-morphing'}`} variant="strong">
+            <div className={`flex items-end p-3 ${isMobile ? 'space-x-2' : 'space-x-2 md:space-x-4 md:p-4'}`}>
               {/* File Upload */}
               <FileUpload onFileUpload={handleFileUpload} disabled={isUploading} />
               
