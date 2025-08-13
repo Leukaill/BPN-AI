@@ -342,3 +342,77 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 114, 142, 0.5);
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .sidebar-mobile-hidden {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .sidebar-mobile-visible {
+    transform: translateX(0);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .mobile-overlay {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+  }
+  
+  /* Mobile-optimized glassmorphism */
+  .mobile-glass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .dark .mobile-glass {
+    background: rgba(0, 0, 0, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  /* Mobile input styling */
+  .mobile-input {
+    font-size: 16px; /* Prevents zoom on iOS */
+    -webkit-appearance: none;
+    border-radius: 12px;
+  }
+  
+  /* Touch-friendly buttons */
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Extra small screens */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+  }
+  
+  .dark .glass-card {
+    background: rgba(0, 0, 0, 0.85);
+  }
+  
+  /* Simplified animations on mobile for performance */
+  .animate-morphing,
+  .animate-liquid-flow,
+  .animate-bubble-float {
+    animation: none;
+  }
+}
+
+/* Mobile-specific utility classes */
+.mobile-safe-area {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+.mobile-keyboard-adjust {
+  padding-bottom: env(keyboard-inset-height, 0px);
+}

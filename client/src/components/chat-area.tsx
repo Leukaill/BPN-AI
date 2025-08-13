@@ -171,35 +171,35 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
   };
 
   return (
-    <div className="flex-1 flex flex-col relative">
+    <div className="flex-1 flex flex-col relative mobile-keyboard-adjust">
       {/* Liquid Glass Overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-denyse-white/90 to-denyse-grey/30 dark:from-slate-800/50 dark:to-slate-900/30 backdrop-blur-sm"></div>
       
       {/* Chat Header */}
-      <div className="relative z-10 liquid-glass-strong border-b border-white/10 p-6">
+      <div className="relative z-10 liquid-glass-strong border-b border-white/10 p-4 md:p-6 mobile-safe-area">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="liquid-bubble w-12 h-12 bg-denyse-turquoise rounded-full flex items-center justify-center">
-              <Bot className="text-white text-xl" />
+          <div className="flex items-center space-x-3 md:space-x-4">
+            <div className="liquid-bubble w-10 h-10 md:w-12 md:h-12 bg-denyse-turquoise rounded-full flex items-center justify-center">
+              <Bot className="text-white text-lg md:text-xl" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Denyse</h2>
-              <p className="text-sm text-gray-600 dark:text-slate-300">Powered by Advanced Language Models</p>
+              <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white">Denyse</h2>
+              <p className="text-xs md:text-sm text-gray-600 dark:text-slate-300 hidden sm:block">Powered by Advanced Language Models</p>
             </div>
           </div>
-          <div className="flex items-center space-x-3">
-            <LiquidGlass className="rounded-full px-4 py-2 animate-morphing">
+          <div className="flex items-center space-x-2 md:space-x-3">
+            <LiquidGlass className="rounded-full px-3 md:px-4 py-1 md:py-2 hidden sm:block">
               <div className="flex items-center space-x-2">
                 <div className="w-2 h-2 bg-denyse-green rounded-full animate-pulse"></div>
-                <span className="text-sm text-gray-900 dark:text-slate-200 font-medium">Online</span>
+                <span className="text-xs md:text-sm text-gray-900 dark:text-slate-200 font-medium">Online</span>
               </div>
             </LiquidGlass>
             <Button
               variant="ghost"
               size="sm"
-              className="liquid-glass rounded-full p-2 hover:bg-white/40 transition-all duration-300 ripple-effect"
+              className="liquid-glass rounded-full p-2 hover:bg-white/40 transition-all duration-300 ripple-effect mobile-touch-target"
             >
-              <MoreVertical className="text-denyse-turquoise" />
+              <MoreVertical className="text-denyse-turquoise w-4 h-4 md:w-5 md:h-5" />
             </Button>
           </div>
         </div>
@@ -208,7 +208,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
       {/* Chat Messages */}
       <div className="flex-1 relative z-10 overflow-hidden">
         <ScrollArea className="h-full">
-          <div className="p-6">
+          <div className="p-4 md:p-6">
             {!currentChatId && messages.length === 0 ? (
               <div className="max-w-4xl mx-auto">
                 {/* Welcome Message */}
@@ -225,13 +225,13 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                 </div>
 
                 {/* Sample Capabilities */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                  <LiquidGlass className="rounded-xl p-6 hover:bg-white/40 transition-all duration-300 cursor-pointer group animate-morphing">
-                    <div className="flex items-start space-x-4">
-                      <Upload className="text-denyse-turquoise text-2xl mt-1" />
-                      <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Document Analysis</h3>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mb-6 md:mb-8">
+                  <LiquidGlass className="rounded-xl p-4 md:p-6 hover:bg-white/40 transition-all duration-300 cursor-pointer group md:animate-morphing mobile-touch-target">
+                    <div className="flex items-start space-x-3 md:space-x-4">
+                      <Upload className="text-denyse-turquoise text-lg md:text-2xl mt-1 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1 md:mb-2 text-sm md:text-base">Document Analysis</h3>
+                        <p className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
                           Upload PDFs, DOCX files and extract key information instantly.
                         </p>
                       </div>
@@ -239,14 +239,14 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                   </LiquidGlass>
                   
                   <LiquidGlass 
-                    className="rounded-xl p-6 hover:bg-white/40 transition-all duration-300 cursor-pointer group animate-morphing"
+                    className="rounded-xl p-4 md:p-6 hover:bg-white/40 transition-all duration-300 cursor-pointer group md:animate-morphing mobile-touch-target"
                     style={{ animationDelay: '0.5s' }}
                   >
-                    <div className="flex items-start space-x-4">
-                      <BarChart className="text-denyse-green text-2xl mt-1" />
-                      <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Report Generation</h3>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                    <div className="flex items-start space-x-3 md:space-x-4">
+                      <BarChart className="text-denyse-green text-lg md:text-2xl mt-1 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1 md:mb-2 text-sm md:text-base">Report Generation</h3>
+                        <p className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
                           Create comprehensive reports using data from multiple sources.
                         </p>
                       </div>
@@ -254,14 +254,14 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                   </LiquidGlass>
                   
                   <LiquidGlass 
-                    className="rounded-xl p-6 hover:bg-white/40 transition-all duration-300 cursor-pointer group animate-morphing"
+                    className="rounded-xl p-4 md:p-6 hover:bg-white/40 transition-all duration-300 cursor-pointer group md:animate-morphing mobile-touch-target"
                     style={{ animationDelay: '1s' }}
                   >
-                    <div className="flex items-start space-x-4">
-                      <FileText className="text-denyse-turquoise text-2xl mt-1" />
-                      <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Intelligent Search</h3>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                    <div className="flex items-start space-x-3 md:space-x-4">
+                      <FileText className="text-denyse-turquoise text-lg md:text-2xl mt-1 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1 md:mb-2 text-sm md:text-base">Intelligent Search</h3>
+                        <p className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
                           Query information with context and reasoning capabilities.
                         </p>
                       </div>
@@ -269,14 +269,14 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                   </LiquidGlass>
                   
                   <LiquidGlass 
-                    className="rounded-xl p-6 hover:bg-white/40 transition-all duration-300 cursor-pointer group animate-morphing"
+                    className="rounded-xl p-4 md:p-6 hover:bg-white/40 transition-all duration-300 cursor-pointer group md:animate-morphing mobile-touch-target"
                     style={{ animationDelay: '1.5s' }}
                   >
-                    <div className="flex items-start space-x-4">
-                      <Globe className="text-denyse-green text-2xl mt-1" />
-                      <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Company Knowledge Base</h3>
-                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                    <div className="flex items-start space-x-3 md:space-x-4">
+                      <Globe className="text-denyse-green text-lg md:text-2xl mt-1 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-gray-900 dark:text-white mb-1 md:mb-2 text-sm md:text-base">Company Knowledge Base</h3>
+                        <p className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
                           Access information from your company's knowledge base automatically.
                         </p>
                       </div>
@@ -311,10 +311,10 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
       </div>
 
       {/* Input Area */}
-      <div className="relative z-10 p-6 border-t border-white/10">
+      <div className="relative z-10 p-3 md:p-6 border-t border-white/10">
         <div className="max-w-4xl mx-auto">
-          <LiquidGlass className="rounded-2xl p-1 animate-morphing" variant="strong">
-            <div className="flex items-end space-x-4 p-4">
+          <LiquidGlass className="rounded-2xl p-1 md:animate-morphing" variant="strong">
+            <div className="flex items-end space-x-2 md:space-x-4 p-3 md:p-4">
               {/* File Upload */}
               <FileUpload onFileUpload={handleFileUpload} disabled={isUploading} />
               
@@ -352,8 +352,8 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     onKeyDown={handleKeyPress}
-                    placeholder={uploadedDocument ? "Ask Denyse about this document..." : "Ask Denyse anything about your documents or organization..."}
-                    className="liquid-input resize-none min-h-[60px] max-h-32 pr-16"
+                    placeholder={uploadedDocument ? "Ask Denyse about this document..." : "Ask Denyse anything..."}
+                    className="liquid-input mobile-input resize-none min-h-[50px] md:min-h-[60px] max-h-32 pr-12 md:pr-16 text-sm md:text-base"
                     disabled={sendMessageMutation.isPending}
                   />
                   {/* Character Counter */}
@@ -370,7 +370,7 @@ export function ChatArea({ currentChatId, onChatCreated }: ChatAreaProps) {
               <Button
                 onClick={handleSendMessage}
                 disabled={!message.trim() || sendMessageMutation.isPending}
-                className="bg-denyse-turquoise text-white hover:bg-denyse-turquoise/80 transition-all duration-300 ripple-effect disabled:opacity-50"
+                className="bg-denyse-turquoise text-white mobile-touch-target hover:bg-denyse-turquoise/80 transition-all duration-300 ripple-effect disabled:opacity-50"
               >
                 <Send className="group-hover:translate-x-1 transition-transform duration-300" />
               </Button>

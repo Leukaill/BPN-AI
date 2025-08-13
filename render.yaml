@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: denyse-ai-assistant
+    env: node
+    plan: starter
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: denyse-database
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: PORT
+        value: 5000
+
+databases:
+  - name: denyse-database
+    databaseName: denyse_ai
+    user: denyse_user
+    plan: starter

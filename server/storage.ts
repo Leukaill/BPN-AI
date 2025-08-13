@@ -1,9 +1,8 @@
 import { users, chats, messages, documents, denyseKnowledge, knowledgeBase, type User, type InsertUser, type Chat, type InsertChat, type Message, type InsertMessage, type Document, type InsertDocument, type DenyseKnowledge, type KnowledgeBase, type InsertKnowledgeBase } from "@shared/schema";
-import { db } from "./db";
+import { db, pool } from "./db";
 import { eq, desc, and, lt } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { pool } from "./db";
 
 const PostgresSessionStore = connectPg(session);
 
@@ -52,8 +51,9 @@ export class DatabaseStorage implements IStorage {
   sessionStore: any;
 
   constructor() {
+    // Create session store with compatible pool configuration
     this.sessionStore = new PostgresSessionStore({ 
-      pool, 
+      pool: pool as any, 
       createTableIfMissing: true 
     });
   }
